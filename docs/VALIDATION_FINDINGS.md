@@ -128,6 +128,22 @@ independent accuracy measure; step D (ground truth) is still needed for that.
 of the time, because many parks have only 1–2 fields. That means the free-windows view
 (open time *between* permits) is likely the most useful feature.
 
+## 4d. Permit time quality (found while preparing step D)
+
+| Finding | Detail |
+|---|---|
+| **End at or before start** | **1,688 of 15,458 sports permits (11%)**, all same-day: 409 zero-length, the rest ending 1–7 hours *before* they start (e.g. Chelsea Park #938094, Nov 8, 1:00pm → 12:00pm). There's no consistent offset (it isn't an AM/PM mix-up), so the true end time can't be inferred. |
+| Effect on step G | These permits covered zero slots, so they were **left out**. Bookings are therefore **undercounted**, and the real "fully booked" share is somewhat higher than 58%. |
+| Repeated `event_id` | 2,707 IDs repeat, up to 30 rows each. These are **recurring permits expanded one row per date** (no identical rows, never two on the same date). Not duplicates. |
+| Long permits | None over 24 hours; 1,580 run 6–24 hours (e.g. all-day 8am–11pm league days). |
+
+**Decision needed** (informed by step D): how to treat a permit whose end ≤ start.
+- Option A: assume a default length (e.g. the median 2 hours).
+- Option B: block from the start time to the end of that day.
+- Option C: show it as "permit time unclear" and answer "Unknown" for those slots.
+
+The step D checklist flags each such permit (⚠) so the map's real time can be recorded.
+
 ## 5. What this changes in the plan
 
 > Items 4 and 5 below describe the earlier field-level design. They are superseded by
