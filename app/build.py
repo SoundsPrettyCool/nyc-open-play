@@ -50,6 +50,10 @@ class Refused(Exception):
     """The slots API answered 403: stop the whole run, don't retry or work around it."""
 
 
+class SlotsError(Exception):
+    """A field's request failed. The message never contains the API URL."""
+
+
 def socrata(ds: str, params: dict, cache: Path | None, name: str) -> list[dict]:
     if cache and (cache / f"{name}.json").exists():
         return json.loads((cache / f"{name}.json").read_text())
@@ -96,7 +100,7 @@ class SlotsClient:
         path = self.cache / "slots" / f"{system_id}_{start}.json" if self.cache else None
         if path and path.exists():
             return json.loads(path.read_text())
-        for attempt in range(4):
+        for attempt in range(3):
             wait = self.delay - (time.monotonic() - self._last)
             if wait > 0:
                 time.sleep(wait)
@@ -105,17 +109,17 @@ class SlotsClient:
             r = self.s.get(self.url, params={"systemId": system_id, "startDate": start.isoformat()}, timeout=60)
             if r.status_code == 403:
                 raise Refused(f"403 from slots API for {system_id}")
-            if r.status_code == 429 or r.status_code >= 500:
+            if (r.status_code == 429 or r.status_code >= 500) and attempt < 2:
                 time.sleep(self.delay * 2 ** (attempt + 1))
                 continue
-            r.raise_for_status()
+            if not r.ok:
+                raise SlotsError(f"HTTP {r.status_code}")
             data = r.json()
             if path:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(json.dumps(data))
             return data
-        r.raise_for_status()
-        raise RuntimeError(f"slots API kept failing for {system_id}")
+        raise SlotsError(f"HTTP {r.status_code}")
 
 
 def round_coords(obj, nd):
@@ -192,8 +196,10 @@ def main():
                 slot_data[sid] = {"intervals": intervals, "close": close, "label": label}
             except Refused:
                 raise
-            except Exception as e:  # noqa: BLE001
-                failures[sid] = f"{type(e).__name__}: {e}"
+            except SlotsError as e:
+                failures[sid] = str(e)
+            except Exception as e:  # noqa: BLE001  (network errors etc.; never include the URL)
+                failures[sid] = type(e).__name__
             if n % 25 == 0 or n == len(active):
                 print(f"  slots: {n}/{len(active)} fields, {client.requests} requests, {len(failures)} failed", flush=True)
     except Refused as e:
