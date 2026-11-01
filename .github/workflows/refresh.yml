@@ -1,0 +1,57 @@
+name: Refresh data and deploy
+
+# Twice a day (05:17 and 17:17 New York time in winter; cron is UTC), plus manual runs.
+# Fetches 2 weeks of slots for every active soccer field (~740 requests, 1.5 s apart),
+# then publishes app/site to GitHub Pages. A failed build publishes nothing, so the
+# previous deployment stays live.
+on:
+  schedule:
+    - cron: "17 10,22 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: refresh-and-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t soccer-open-play:ci .
+
+      - name: Run tests
+        run: docker run --rm soccer-open-play:ci
+
+      - name: Build data (2 weeks ahead)
+        env:
+          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+        run: |
+          mkdir -p app/site/data && chmod 777 app/site/data
+          docker run --rm -e SOCRATA_APP_TOKEN \
+            -v "$PWD/app/site/data:/repo/app/site/data" \
+            soccer-open-play:ci python app/build.py --weeks 2 --delay 1.5
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
