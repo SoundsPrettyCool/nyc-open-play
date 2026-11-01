@@ -1,199 +1,111 @@
 # Soccer Open Play — Plan
 
-Goal: tell a user whether **an NYC park has at least one soccer field with no permit on
-record** at a given date/time, so they can show up for open play. Which field to use is
-left to the player on site, or to the park's nycgovparks.org permit page, which we link.
+Goal: show which NYC Parks soccer fields have **no permit** at a given date and time, so
+people can go play pickup, with a link to the NYC Parks map to confirm.
 
-> **Updated 2026-11-01.** Validation results are in [VALIDATION_FINDINGS.md](VALIDATION_FINDINGS.md).
-> - nycgovparks.org blocks automated clients (CloudFront 403), so we use the official
->   NYC Open Data permit feed **`tvpp-9vvx`** instead.
-> - Answers are **park-level**, not field-level. This removes the hard part (mapping
->   permits to exact fields): 92.4% of soccer permits map to a park automatically, and
->   a 10-row alias table covers the rest.
+> **Rewritten 2026-11-01** after finding the NYC Parks slots API (findings §7). The earlier
+> design, built around the Open Data permit feed `tvpp-9vvx`, is in this file's git history.
+> That feed matched the NYC Parks map in only 56–72% of Chelsea Park slots (findings §4e).
 
-> **Update 2026-11-01 (late):** NYC Parks' own slots API
-> (`$NYC_PARKS_SLOTS_API_URL`, findings §7) matches the Availability Map
-> 100% on the Chelsea check, and gives **field-level** availability with permit holders and
-> pending permits. That likely restores the original goal (accurate "this field is open"
-> answers). The design below, built around `tvpp-9vvx`, is pending a rewrite once the
-> switch is confirmed.
-
-Decisions so far:
-
-| Question | Answer |
+| Decision | Answer |
 |---|---|
 | Audience | Public, aiming to grow |
-| Interface | Simple web page (with map) |
-| Granularity | **Park-level**: "X of N soccer fields free", not which field |
-| Query shape | Both: yes/no for a slot, and free windows over a day/week |
-| Coverage | All of NYC (215 parks with soccer fields) |
-| Backend language | Python (tentative, confirm) |
-
-Core principle: **user requests never hit upstream sources.** A background ingest job
-pulls from the Open Data API into our DB; the web app reads only from the DB.
-
----
+| Interface | Static web page with a map |
+| Granularity | **Field-level** ("Soccer-01 at Chelsea Park is open 6–7pm") |
+| Horizon | **2 weeks ahead** |
+| Refresh | **Twice a day** (05:17 and 17:17 New York time). The NYC Parks map itself updates daily. |
+| Coverage | All active soccer fields (~370) in all boroughs |
+| Stack | Python build script + static HTML/JS on GitHub Pages; Docker for tests and CI |
 
 ## 1. Data sources
 
-| Source | Used for | Status |
+| Source | Used for |
+|---|---|
+| **NYC Parks slots API** `$NYC_PARKS_SLOTS_API_URL?systemId=…&startDate=…` | Per-field 30-minute availability: issued permits, permits awaiting approval, pending applications, overlapping-field blocks, permit holders. **Undocumented**, but it matches the map 100% on 252 checked slots. |
+| Athletic Facilities `qnem-b8re` | Soccer fields (`regulation_soccer` or `nonregulation_soccer`), `system` ID (= API `systemId`), status, surface, lights, geometry (WGS84) |
+| Parks Properties `enfh-gkve` | Park names and boundaries |
+
+No longer used: the `tvpp-9vvx` permit feed, park-name matching, the alias table, and
+field-count overrides. The API is keyed by field ID, so none of that is needed.
+
+## 2. Architecture
+
+```
+GitHub Actions (cron, twice a day)
+  └─ docker: python app/build.py --weeks 2
+       ├─ Open Data (fields, parks)                     a few requests
+       └─ slots API: 1 request per field per week, 1.5 s apart  ~740 requests (~20 min)
+  └─ writes app/site/data/{index.json, parks/<id>.json}
+  └─ deploys app/site to GitHub Pages
+Browser ── static HTML/JS ── reads the JSON files (never calls NYC Parks directly)
+```
+
+- **No server and no database.** The data is a few MB of JSON, refreshed on a schedule.
+- The API has **no CORS headers**, so browsers can't call it anyway, and NYC's load stays
+  fixed however many people use the site.
+- **Politeness and safety:**
+  - honest User-Agent and a fixed delay between requests,
+  - retries only on 429/5xx, and a **hard stop on 403**,
+  - nothing is published if more than 20% of fields fail.
+
+## 3. How answers are computed
+
+Per field, per 30-minute slot (from the API):
+
+| API slot | State | Shown as |
 |---|---|---|
-| "Athletic Facilities" (`qnem-b8re`) | Count of **active** soccer fields per park (`regulation_soccer` OR `nonregulation_soccer`, `featurestatus = Active`), field polygons for the map | Confirmed |
-| "NYC Permitted Event Information" (`tvpp-9vvx`) | Sports permits: park name + label in `event_location`, start/end, sport, youth/adult. ~1 month ahead, updated daily, no permittee names. | Confirmed: primary permit source |
-| "Parks Properties" (`enfh-gkve`) | Park name → `gispropnum`; park boundary; search names | Confirmed |
-| "Parks Permit Areas" (`c5vm-g2dk`) | Extra park-name aliases | Confirmed |
-| nycgovparks.org | **Linked only** (per-park permit page for confirming the exact field). Never fetched by us. | Blocked for automated clients |
+| Not listed | free | **Open: no permit** |
+| `is_issued: true` | booked | **Permitted**: holder, type, permit #, until when |
+| `is_issued: false`, holder set | awaiting | **Permit awaiting approval** (treated as unavailable, same as the map) |
+| `is_issued: false`, no holder, `num_pending_permits > 0` | pending | **Open, but an application is pending** (the map shows "\*Available") |
+| `permit_is_for_overlapping_field: true` | booked/awaiting | Same as above, noted "permit is for an overlapping field" |
+| Field `featurestatus` ≠ Active | — | **Closed / inactive** |
+| Data fetch failed, or beyond the window | — | **Unknown** |
 
-## 2. Validation status
+- **Park summary:** "3 of 5 soccer fields open 6–7pm", plus free windows per field
+  ("Soccer-01: open 9–10:30am, 6–7pm").
+- Every page shows when the data was last refreshed, and links to the NYC Parks map.
 
-Scripts are in [`validation/`](../validation/README.md); results are in [VALIDATION_FINDINGS.md](VALIDATION_FINDINGS.md).
+## 4. Pages (MVP)
 
-| Step | Status |
+- **Search:** fuzzy park search (name or alias), borough filter, and an "open right now" count.
+- **Park page:**
+  - map with the park boundary and each soccer field colored by its state at the selected
+    time (color plus label, never color alone),
+  - date and time picker; per-field day timeline,
+  - permit details on tap,
+  - link to the NYC Parks map.
+- **Basemap:** MapLibre GL JS with OpenFreeMap tiles (free, no key). Self-hosted Protomaps
+  later if needed.
+- **Disclaimer:** "Unofficial. Data from NYC Parks, refreshed twice a day. Fields can be
+  closed or in informal use; confirm on the NYC Parks map."
+
+**Later:**
+- city-wide "open now near me" map,
+- alerts when a field opens up,
+- other sports (the API isn't soccer-specific),
+- user reports of field conditions.
+
+## 5. Status
+
+| Piece | Status |
 |---|---|
-| A. Open Data inventory | Done |
-| B/C. Scrape nycgovparks.org permit sheets | Blocked (CloudFront 403). Dropped. |
-| F. Permit feed → park join | Done: 92.4% of soccer permits auto-match a park; 10 park names need aliases |
-| G. Park-level counting check | Done: **94.1%** of park-slots consistent; the 21 problem parks are fixed with a per-park `N` override |
-| D. Ground truth | **In progress.** Chelsea Park Nov 8–14: the feed matches the map in only **72%** of slots, and errors mostly say "open" when booked. **Blocking.** Other parks are still to check ([STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md)). |
-| E. Churn | To do: pull `tvpp-9vvx` daily for a week and diff (do revoked permits disappear?) |
+| Validation | Done (findings §1–§7) |
+| Data build (`app/build.py`, `app/slots.py`) | Done and unit-tested |
+| Docker + CI (`ci.yml`) | Done |
+| Twice-daily refresh + Pages deploy (`refresh.yml`) | Written. Needs GitHub Pages enabled (Settings → Pages → Source: GitHub Actions). |
+| Web pages | **To do** |
+| Email to NYC Parks | Drafted in [EMAIL_NYC_PARKS.md](EMAIL_NYC_PARKS.md), to send |
 
-## 3. How an answer is computed
+## 6. Risks and open questions
 
-For park `P` and time window `T`:
-
-1. `N` = active soccer-capable fields in `P`, from Athletic Facilities, or the park's
-   `n_override` when it has one. The override is the larger of the dataset count and the
-   distinct soccer-surface labels seen in permits; step G found 21 parks that need it.
-2. `B` = **distinct permit labels** (the part of `event_location` after the colon, e.g.
-   `North Meadow-Soccer-03`) at `P` that overlap `T` and are on a soccer-capable
-   surface. That means soccer permits, plus other sports whose label names a soccer,
-   football, multi-purpose, MPPA, turf or futsal surface; a bare "field" label counts
-   only for field sports. One permit row can list several locations, separated by
-   commas; count each.
-3. `free = N − B`.
-
-| Condition | Answer shown |
-|---|---|
-| `B = 0` | **"No permits on record: all N soccer fields look open"** |
-| `0 < B < N` | **"About `free` of N soccer fields have no permit"** |
-| `B ≥ N` | **"Likely fully booked"**. Never a negative number. Permit list shown. |
-| `N = 0` (all inactive/closed) | **"No active soccer fields listed"** |
-| Park has any permit with end ≤ start that day | Normal answer, plus **"⚠ N permits today have unclear times: confirm on NYC Parks"**. These permits never block time. |
-| Park unmapped, data stale, or `T` beyond the horizon | **"Unknown"**, with the reason |
-
-Below every answer:
-- the overlapping permits ("Youth soccer · Soccer-03 · until 12:00pm"),
-- the data freshness ("Permits updated 6:10am today"),
-- a link to the park's nycgovparks.org permit page for the exact field. The URL
-  pattern still needs confirming in a browser.
-
-The counts are approximate, mainly because the fields dataset sometimes undercounts a
-park's surfaces (handled with `n_override`). The wording says "about", and the permit
-list lets users judge for themselves.
-
-**Free windows** for the day/week view: split the day into 30-minute slots, compute
-`free` for each slot, and merge runs of slots where `free > 0`. Result: "Open play
-likely 7–9am, 12–3pm".
-
-## 4. Architecture
-
-```
-[Ingest job, a few times/day] --(Socrata API)--> NYC Open Data
-      | raw JSON snapshots -> object storage (re-parseable, diffable)
-      v
-[Postgres + PostGIS + pg_trgm] <-- [FastAPI] <-- [Web UI + MapLibre] (CDN in front)
-```
-
-- **Python**: requests, rapidfuzz. **FastAPI** for the API.
-- **Postgres**: PostGIS (geometry is already WGS84), `pg_trgm` for fuzzy park search,
-  `tstzrange` + GiST for overlap queries.
-- No Redis initially; Postgres + CDN caching suffices. With ~215 parks and ~1 month of
-  permits, everything fits in memory, so per-park answers can also be precomputed.
-- Frontend: light React/Vite or server-rendered + htmx.
-- Hosting: one app container, one scheduled worker, managed Postgres.
-
-**Ingest**
-- Permits: pull `tvpp-9vvx` sports permits a few times a day, using a Socrata app
-  token. Replace the permit window wholesale on each pull, so revoked permits disappear.
-- Fields and parks: refresh weekly.
-- Alerts: a new park name that doesn't map; a sudden drop in permit count; a failed pull.
-
-### Data model
-
-- `park` (gispropnum, name, borough, aliases[], centroid, boundary MultiPolygon 4326, permit_page_url, n_override nullable)
-- `park_alias` (permit_park_name → gispropnum). Seeded with the 10 unmatched names.
-- `field` (system, gispropnum, primary_sport, surface, lit, dimensions, geom 4326, featurestatus).
-  Used for `N` and for map context only.
-- `permit` (event_id, gispropnum, label, sport, youth/adult, during tstzrange, snapshot_id)
-- `source_snapshot` (dataset, fetched_at, row_count, sha256, blob_key)
-
-GiST index on `permit.during`.
-
-## 5. Map view
-
-Purpose: let users **verify the park** is the one they mean, and see where its soccer
-fields are.
-
-- The park boundary, plus its soccer field polygons drawn **neutrally** (no per-field
-  status, because we don't know which field a permit is on). The park-level answer sits
-  next to the map.
-- "Open in Google/Apple Maps" for directions.
-- **MapLibre GL JS**, with **Protomaps PMTiles** self-hosted on object storage/CDN as the
-  basemap. A hosted MapTiler/Stadia free tier is the alternative. Don't use public OSM
-  tile servers.
-- Satellite toggle using free NYC/NYS aerial imagery if the terms allow. It helps people
-  spot the fields.
-- API: `GET /parks/{id}/geo` returns GeoJSON (boundary + fields). Simplify boundaries at
-  ingest (`ST_SimplifyPreserveTopology`).
-
-## 6. MVP vs. later
-
-**MVP**
-- All 215 parks with soccer fields; scheduled Open Data ingest; park alias table.
-- Fuzzy park search with a mini-map per result, to tell similar names apart.
-- Park page: the park-level answer for the chosen time, free windows for the day, the
-  permit list, the map, and the nycgovparks.org link.
-- Freshness stamps; disclaimer: "Unofficial. Based on permits on record. Fields may be
-  closed or in informal use."
-- Simple ops page: last ingest, unmapped park names.
-
-**Later**
-- City-wide map with "near me" (PostGIS distance) and "parks with open fields right now".
-- Week view; alerts ("tell me if a field opens up at X on Saturday").
-- User reports ("all fields were taken", "field closed") to correct counts.
-- Field-level answers, if users ask for them: map permit labels to fields (we have
-  64% automatic matching already, and the location map in `step_f_events.py` as a seed).
-- Other sports; historical patterns ("usually free Sunday mornings"); off-season handling; PWA.
-
-## 7. Open questions
-
-Answered: column names, soccer marker, park ID; geometry is WGS84; Parks Properties
-shares `gispropnum`; scraping is moot.
-
-Also answered by step G: counting is consistent in 94.1% of park-slots, the 21 problem
-parks get an `n_override`, and half-field permits are negligible.
-
-1. **Real-world accuracy** (step D): does "about X free" match what's on the ground or on the Availability Map? The checklist is in [STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md).
-0. **Is the permit feed accurate enough? Currently no, for Chelsea Park.** Over Nov 8–14 the feed matched the NYC Parks Availability Map in only **72% of half-hour slots**, and 46 of the 53 errors would tell people a booked field is open (findings §4e). Most of the missing bookings are **pending permits**, which the map shows as unavailable but the feed (approved events only) never includes. Separately, 4 of 7 approved permits on Sun Nov 8 had wrong times. **Blocking question for the whole design.** Next steps: (a) confirm the other days' mismatches are also pending permits; (b) decide whether "no approved permits, pending ones unknown" is a useful answer; (c) check one or two more parks; (d) contact NYC Parks about a feed that includes pending permits.
-1a. **11% of permits have end ≤ start** (findings §4d–e). Decided from the Chelsea check: these permits don't block time, and the park-day answer carries a "permit times unclear, confirm on NYC Parks" warning. Re-check with more parks.
-2. Does `tvpp-9vvx` drop revoked permits promptly? (E)
-3. Are `tvpp-9vvx` times America/New_York local? (Almost certainly. Confirm once.)
-4. Should `n_override` be recomputed automatically on each ingest (any park where permits ever exceed `N`), or reviewed by hand?
-5. Is the ~1-month horizon acceptable? Season-long data would need NYC Parks to cooperate (email / FOIL).
-6. What's the per-park nycgovparks.org permit-page URL pattern? (Check in a browser.)
-7. What to show between seasons?
-8. Satellite view in MVP? (Depends on imagery terms.)
-9. Python confirmed, or TypeScript end to end?
-
-## 8. Effort estimate
-
-| Piece | Effort |
-|---|---|
-| Remaining validation (D, E) | about 1 day of work, plus a week of passive daily pulls |
-| Ingest + park matching + alias table | 2–4 days |
-| API + DB (answers, free windows) | 3–5 days |
-| Web UI + map | 1–2 weeks |
-| Hardening (alerts, ops page) | ongoing, light |
-
-≈ **3–4 weeks part-time** for a solid MVP. That's down from 4–6, because there's no
-scraper and no field-level mapping.
+1. **The API is undocumented.** It could change or block us. Mitigations:
+   - the email asking permission and a preferred rate,
+   - the 403 hard stop,
+   - the last good deployment staying live after a failed build,
+   - CI catching format changes through tests on a real response fixture.
+2. **Whether GitHub Actions IPs are allowed.** The NYC Parks HTML pages blocked this dev
+   environment, but the API didn't. Confirm on the first scheduled run.
+3. **Does "awaiting approval" really mean unavailable for play?** It does on the map. Keep it.
+4. **Closed fields that the data doesn't show** (maintenance, weather) are still possible.
+   The disclaimer covers this; user reports could come later.

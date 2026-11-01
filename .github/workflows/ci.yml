@@ -23,8 +23,9 @@ jobs:
         run: docker run --rm soccer-open-play:ci
 
   data-smoke:
-    name: Build data from live NYC Open Data
+    name: Smoke-test data build (live APIs, 5 fields)
     # Hits live APIs, so it runs only on demand or on main, not on every PR push.
+    # The full twice-daily build lives in refresh.yml.
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
@@ -41,9 +42,9 @@ jobs:
           mkdir -p app/site/data && chmod 777 app/site/data
           docker run --rm -e SOCRATA_APP_TOKEN \
             -v "$PWD/app/site/data:/repo/app/site/data" \
-            soccer-open-play:ci python app/build.py
+            soccer-open-play:ci python app/build.py --weeks 1 --limit 5
 
       - name: Check output
         run: |
           test -s app/site/data/index.json
-          python3 -c "import json; d=json.load(open('app/site/data/index.json')); n=len(d['parks']); print(n, 'parks'); assert n > 100"
+          python3 -c "import json; d=json.load(open('app/site/data/index.json')); n=len(d['parks']); print(n, 'parks'); assert n >= 1"
