@@ -34,6 +34,9 @@ Without `make`: `docker compose run --rm test`, `docker compose run --rm build-d
 If Docker Hub rate-limits you, use Google's mirror of the same image:
 `make test BASE_IMAGE=mirror.gcr.io/library/python:3.12-slim`.
 
-CI (`.github/workflows/ci.yml`) builds the image and runs the tests on every push and PR.
+CI (`.github/workflows/ci.yml`) builds the image and runs the tests on every push and PR, on
+GitHub's runners. The live-data jobs (the twice-daily refresh and the CI smoke test) run on a
+**self-hosted Raspberry Pi runner**, because NYC Parks' CDN challenges GitHub's runners. Setup:
+[`docs/RASPBERRY_PI.md`](docs/RASPBERRY_PI.md).
 A second job builds the site data from the live APIs on `main` or on manual runs. To raise
 the API rate limits, set an optional `SOCRATA_APP_TOKEN` repository secret.

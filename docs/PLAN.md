@@ -104,8 +104,10 @@ Per field, per 30-minute slot (from the API):
    - the 403 hard stop,
    - the last good deployment staying live after a failed build,
    - CI catching format changes through tests on a real response fixture.
-2. **Whether GitHub Actions IPs are allowed.** The NYC Parks HTML pages blocked this dev
-   environment, but the API didn't. Confirm on the first scheduled run.
+2. **GitHub Actions is challenged.** NYC Parks' CloudFront serves GitHub-hosted runners a
+   "Human Verification" page (HTTP 405). The build stops on it and never tries to get past it.
+   The data jobs now run on a self-hosted Raspberry Pi runner
+   ([RASPBERRY_PI.md](RASPBERRY_PI.md)), and the email asks NYC Parks whether that's acceptable.
 3. **Does "awaiting approval" really mean unavailable for play?** It does on the map. Keep it.
 4. **Closed fields that the data doesn't show** (maintenance, weather) are still possible.
    The disclaimer covers this; user reports could come later.

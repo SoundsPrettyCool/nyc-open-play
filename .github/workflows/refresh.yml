@@ -4,6 +4,10 @@ name: Refresh data and deploy
 # Fetches 2 weeks of slots for every active soccer field (~740 requests, 1.5 s apart),
 # then publishes app/site to GitHub Pages. A failed build publishes nothing, so the
 # previous deployment stays live.
+#
+# The build job runs on a self-hosted runner (a Raspberry Pi; see docs/RASPBERRY_PI.md),
+# because NYC Parks' CDN serves GitHub-hosted runners a "Human Verification" page.
+# Only schedule and manual triggers use it: never pull requests.
 on:
   schedule:
     - cron: "17 10,22 * * *"
@@ -20,7 +24,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, ARM64, nyc-open-play]
     timeout-minutes: 60
     steps:
       - name: Check required configuration
@@ -46,7 +50,8 @@ jobs:
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
         run: |
           mkdir -p app/site/data && chmod 777 app/site/data
-          docker run --rm -e NYC_PARKS_SLOTS_API_URL -e SOCRATA_APP_TOKEN \
+          # Run as the runner's own user so it can clean up these files on the next checkout.
+          docker run --rm --user "$(id -u):$(id -g)" -e NYC_PARKS_SLOTS_API_URL -e SOCRATA_APP_TOKEN \
             -v "$PWD/app/site/data:/repo/app/site/data" \
             nyc-open-play:ci python app/build.py --weeks 2 --delay 1.5
 
