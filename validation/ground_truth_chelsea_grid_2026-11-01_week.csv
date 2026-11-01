@@ -1,0 +1,13 @@
+# NYC Parks Availability Map, Chelsea Park Soccer-01, screenshot shared by the user on 2026-11-01.
+# Column headers were not visible; assumed Sun Nov 1 .. Sat Nov 7 (column 2 shows permit #943204 details, matching the requested Nov 2).
+# Only the 5:30pm-9:30pm rows were in the screenshot. U = Unavailable, A = Available.
+slot,2026-11-01,2026-11-02,2026-11-03,2026-11-04,2026-11-05,2026-11-06,2026-11-07
+17:30,U,A,U,A,U,U,U
+18:00,A,U,U,U,U,A,U
+18:30,A,U,U,U,U,A,U
+19:00,U,U,U,U,U,A,U
+19:30,U,U,U,U,U,A,U
+20:00,U,U,U,U,U,U,U
+20:30,U,U,U,U,U,U,U
+21:00,U,U,U,U,U,U,U
+21:30,U,U,U,U,U,U,U

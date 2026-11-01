@@ -232,6 +232,14 @@ rule that only valid-time permits block:
 - Whether the other days' "we say free, site booked" slots are also pending permits
   hasn't been checked yet. If they are, most of the 28% disagreement is pending permits.
 
+**Next-day test (Mon Nov 2, evening rows; see
+[`validation/predictions_2026-11-02_chelsea.md`](../validation/predictions_2026-11-02_chelsea.md)):**
+the prediction was made before checking the map. The map shows #943204 (VOLO) at
+**6–10pm**; the feed says 9–10pm, and on Nov 8 the map said 7–10pm. So the start time
+is wrong by a varying amount, and one weekly league permit alone makes the feed call
+6–9pm "open" on most evenings. Evening slots across Nov 1–7 agree **56%** (35/63), and
+every miss says "free" when the field is booked. Being close to the date doesn't fix this.
+
 **Two separate problems:**
 1. **Pending permits are missing from the feed.** This is a gap in what the feed covers
    (approved events only), not bad data. The app can't see them, so it must never say
