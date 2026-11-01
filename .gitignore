@@ -2,3 +2,4 @@ validation/out/
 __pycache__/
 .venv/
 app/site/data/
+.env

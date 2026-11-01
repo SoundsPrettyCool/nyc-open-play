@@ -10,8 +10,9 @@ Outputs:
 Sources:
     qnem-b8re (Open Data)  Athletic Facilities: soccer fields, IDs, geometry, status
     enfh-gkve (Open Data)  Parks Properties: park names + boundaries
-    $NYC_PARKS_SLOTS_API_URL  per-field availability (undocumented; see
-        docs/VALIDATION_FINDINGS.md §7). One request per field per week, sent politely:
+    NYC Parks slots API  per-field availability (undocumented; see docs/VALIDATION_FINDINGS.md §7).
+        Its URL is NOT hard-coded: set the NYC_PARKS_SLOTS_API_URL environment variable
+        (a GitHub repository variable in CI). One request per field per week, sent politely:
         honest User-Agent, a fixed delay, retries only on 429/5xx, and a hard stop on 403.
 
 Exit status is non-zero if the slots API refuses us or too many fields fail, so CI
@@ -39,7 +40,7 @@ from slots import NY, close_times, to_intervals  # noqa: E402
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "site" / "data"
 SOCRATA = "https://data.cityofnewyork.us/resource"
-SLOTS_API = "$NYC_PARKS_SLOTS_API_URL"
+SLOTS_API_ENV = "NYC_PARKS_SLOTS_API_URL"
 UA = "soccer-open-play/0.1 (free open-play finder; https://github.com/SoundsPrettyCool/soccer-open-play)"
 BOROUGHS = {"B": "Brooklyn", "M": "Manhattan", "Q": "Queens", "R": "Staten Island", "X": "Bronx"}
 MAX_FAILURE_RATE = 0.2
@@ -71,9 +72,22 @@ def socrata(ds: str, params: dict, cache: Path | None, name: str) -> list[dict]:
     return rows
 
 
+def slots_api_url() -> str:
+    """The slots API base URL, from the environment. Required: there is no default."""
+    url = os.environ.get(SLOTS_API_ENV, "").strip()
+    if not url:
+        print(f"ERROR: set {SLOTS_API_ENV} to the NYC Parks slots API URL "
+              "(on GitHub: Settings -> Secrets and variables -> Actions -> Variables).", file=sys.stderr)
+        sys.exit(3)
+    if not url.startswith("https://"):
+        print(f"ERROR: {SLOTS_API_ENV} must be an https:// URL.", file=sys.stderr)
+        sys.exit(3)
+    return url
+
+
 class SlotsClient:
-    def __init__(self, delay: float, cache: Path | None):
-        self.delay, self.cache, self._last = delay, cache, 0.0
+    def __init__(self, url: str, delay: float, cache: Path | None):
+        self.url, self.delay, self.cache, self._last = url, delay, cache, 0.0
         self.s = requests.Session()
         self.s.headers.update({"User-Agent": UA, "Accept": "application/json"})
         self.requests = 0
@@ -88,7 +102,7 @@ class SlotsClient:
                 time.sleep(wait)
             self._last = time.monotonic()
             self.requests += 1
-            r = self.s.get(SLOTS_API, params={"systemId": system_id, "startDate": start.isoformat()}, timeout=60)
+            r = self.s.get(self.url, params={"systemId": system_id, "startDate": start.isoformat()}, timeout=60)
             if r.status_code == 403:
                 raise Refused(f"403 from slots API for {system_id}")
             if r.status_code == 429 or r.status_code >= 500:
@@ -134,6 +148,7 @@ def main():
     ap.add_argument("--cache", type=Path, help="cache raw downloads here (dev runs)")
     a = ap.parse_args()
 
+    api_url = slots_api_url()  # fail fast, before any downloads
     start = date.fromisoformat(a.start) if a.start else datetime.now(NY).date()
     weeks = [start + timedelta(days=7 * i) for i in range(a.weeks)]
 
@@ -162,7 +177,7 @@ def main():
         park_ids = sorted({f["gispropnum"] for f in active})
     wanted = {f["system"] for f in active}
 
-    client = SlotsClient(a.delay, a.cache)
+    client = SlotsClient(api_url, a.delay, a.cache)
     slot_data, failures = {}, {}
     try:
         for n, f in enumerate(active, 1):
@@ -245,7 +260,7 @@ def main():
     meta = {
         "generated_at": generated, "window": window, "parks": len(index),
         "fields_checked": len(active), "fields_failed": len(failures), "slots_requests": client.requests,
-        "failures": failures, "sources": ["qnem-b8re", "enfh-gkve", SLOTS_API],
+        "failures": failures, "sources": ["qnem-b8re", "enfh-gkve", "NYC Parks slots API"],
     }
     (OUT / "index.json").write_text(json.dumps({"meta": meta, "parks": index}, separators=(",", ":")))
 
