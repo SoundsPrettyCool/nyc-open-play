@@ -49,6 +49,17 @@ work from a server. This step pulls sports permits from NYC Open Data
 a soccer field `system` ID. Writes `out/f/location_map.csv`, which seeds the manual
 override table, and `out/f/summary.json`.
 
+### G. Park-level counting check
+
+```bash
+python validation/step_g_counting.py       # uses step F's downloaded data
+```
+
+For every park and 30-minute slot, compares `N` (active soccer fields in the
+dataset) with `B` (distinct permits on soccer-type surfaces), and reports the share of
+slots where `B ≤ N`. Writes `out/g/problem_parks.csv`, with a suggested `N` override
+per problem park, and `out/g/summary.json`.
+
 ### B. Permit inventory (blocked: kept for reference)
 
 First open one park's issued-permits page in a browser and note the exact URL of the

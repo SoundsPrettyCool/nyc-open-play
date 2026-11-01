@@ -81,10 +81,52 @@ map to a **park**.
 | Distinct park names that don't map | **10**: East River Park, Reverend T. Wendell Foster Park, Shore Road Park and Parkway, Kissena Corridor West, Big Bush Park, Kennedy Playground /Raymond O'Connor, Addabbo Park, Scarangella Park, Roy Wilkins Park, Parque De Los Ninos. A 10-row alias table covers them. |
 | Park-hours where distinct booked labels > active soccer fields | 729 / 17,106 (**4.3%**). Worst: M165, B058 (McCarren), R106, M104 (Randall's Island). |
 
-The 4.3% is a **first rough cut**. The filter for "on a soccer surface" was too broad
-(it matched any label containing "field", including softball fields). The same broad
-filter produced 11,103 park-hours that looked fully booked, a figure not to be trusted
-yet. Tightening the filter and re-measuring is step G.
+The 4.3% was a first rough cut with a filter that was too broad. Step G (§4c)
+replaces it.
+
+## 4c. Counting check — step G
+
+`python validation/step_g_counting.py`, using step F's downloaded data. For each park
+and 30-minute slot, it compares `N` (active soccer fields in the dataset) with `B`
+(distinct permit labels on soccer-type surfaces).
+
+**Surface rule:**
+- Soccer permits always count.
+- Other sports count only if the label names soccer, football, multi-purpose, MPPA,
+  turf or futsal.
+- A bare "field" label counts only for field sports.
+
+This skipped 4,468 baseball, softball, tennis and basketball entries.
+
+| Measure | Result |
+|---|---|
+| Park-slots with any booking | 33,444 (149 parks) |
+| **Consistent (`B ≤ N`)** | **94.1%** |
+| `B > N` | 2.2% |
+| `N = 0` but permits exist | 3.7% |
+| Prime time (weekends 9–6, weekdays 5–9pm) | same picture: 94.5% consistent |
+| Problem parks | **21**. Every one has a dataset count of 0 or 1 where permits show at most 2. |
+| Multi-location permit rows | 84 rows list several fields at once (mostly Randall's Island); each field counts |
+| Half-field labels | Only 1 in the whole feed (`Riverside Park: 107th/108th St-Soccer-01 E`). Not an issue. |
+| Unmatched park names | Same 10 as §4b. Riverside Park now resolves, because official names are preferred over Permit Areas aliases. |
+
+**Causes of the problem parks:**
+- **No soccer fields in the dataset**, but soccer permits issued: 9 parks, e.g. Leif
+  Ericson, Rainey, Frank Golden, Rockaway Beach Boardwalk.
+- **Soccer fields all inactive or closed in the dataset**, but still permitted:
+  Prall Playground, City Line Park.
+- **Permits use more surfaces than the dataset lists**: 10 parks, e.g. Baruch
+  Playground (79% of its slots), Seton Park, Alley Athletic, Hinton.
+
+**Fix:** a per-park `N` override, set to the larger of the dataset's active count and
+the distinct soccer-surface labels seen in permits. A permit proves the surface exists.
+`problem_parks.csv` includes the suggested value. With that, every park-slot is
+consistent. That result follows from how the override is defined, so it is not an
+independent accuracy measure; step D (ground truth) is still needed for that.
+
+**Side finding:** in slots where a park has *any* permit, the park is fully booked 58%
+of the time, because many parks have only 1–2 fields. That means the free-windows view
+(open time *between* permits) is likely the most useful feature.
 
 ## 5. What this changes in the plan
 
