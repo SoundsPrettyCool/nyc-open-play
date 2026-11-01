@@ -6,7 +6,7 @@ Court Permit Availability Map. Options, best first:
 2. The borough Permit Office for your borough (listed on the Field & Court permits pages).
 3. 311 (online), as a fallback: ask them to route it to NYC Parks Permits.
 
-Fill in the brackets before sending. The project link assumes the GitHub repo is public;
+Fill in the brackets before sending, including the slots API URL (kept out of the repo on purpose). The project link assumes the GitHub repo is public;
 if it isn't, remove it or make the repo public first.
 
 ---
@@ -21,7 +21,7 @@ so they can play pickup without walking into a permitted game. Players can check
 Field & Court Permit Availability Map today, but they can't easily search across parks.
 
 To do this, the site reads the same data the map uses, from
-`$NYC_PARKS_SLOTS_API_URL`, for active soccer fields only (field
+[paste the slots API URL here — the value of the NYC_PARKS_SLOTS_API_URL repo variable], for active soccer fields only (field
 IDs from the Athletic Facilities dataset on NYC Open Data). We're careful with it:
 
 - About 740 requests twice a day (one per field per week, two weeks ahead), one request every
