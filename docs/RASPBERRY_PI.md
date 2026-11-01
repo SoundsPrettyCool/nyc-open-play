@@ -12,7 +12,10 @@ apart, about 20–25 minutes) and hands the result to GitHub Pages.
 
 - A Raspberry Pi 3, 4 or 5 running **64-bit** Raspberry Pi OS (Bookworm or later) or
   64-bit Ubuntu. The Python packages have no 32-bit ARM builds.
-  Check with `uname -m`: it must print `aarch64`.
+  Check with `dpkg --print-architecture`: it must print **`arm64`**. Don't rely on `uname -m`:
+  32-bit Raspberry Pi OS on a Pi 4/5 boots a 64-bit kernel, so `uname -m` says `aarch64` even
+  though the system is 32-bit (`armhf`), and the ARM64 runner then fails with
+  "Exec format error".
 - Always on, with a wired or reliable Wi-Fi connection.
 - About 2 GB of free disk space (Docker image and runner).
 
@@ -46,6 +49,11 @@ could *edit* a workflow to target the Pi, so set these before adding the runner:
 3. When `./config.sh` asks for **additional labels**, enter: `nyc-open-play`
    (`self-hosted`, `linux` and `ARM64` are added automatically). The workflows look for all four.
 4. Accept the default work folder.
+
+If `./config.sh` fails with **"cannot execute binary file: Exec format error"**:
+- `dpkg --print-architecture` says `armhf`: reinstall with Raspberry Pi OS **(64-bit)**.
+- It says `arm64`, but `file bin/Runner.Listener` says `x86-64`: you downloaded the x64 package.
+  Delete `~/actions-runner` and redo this step with **ARM64** selected on GitHub's page.
 
 ## 4. Run it as a service (survives reboots)
 
