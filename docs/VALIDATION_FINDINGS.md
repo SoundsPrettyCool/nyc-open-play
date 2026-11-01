@@ -1,5 +1,12 @@
 # Validation findings — 2026-11-01
 
+> **Update 2026-11-01 (late): a better source exists.** The NYC Parks Availability Map is
+> backed by a JSON endpoint, `$NYC_PARKS_SLOTS_API_URL`, keyed by the same
+> `system` field ID as Athletic Facilities. It matches the map **100%** on the Chelsea
+> screenshots, and it includes pending permits, overlapping fields and permit holders.
+> See §7. The `tvpp-9vvx` findings below remain as the record of why the Open Data feed
+> wasn't enough.
+
 **Verdict: GO, using a different permit source than planned.**
 NYC Open Data publishes approved Parks sports permits through an official API.
 With park-level answers (the current design), **92.4% of soccer permits map to a park
@@ -290,3 +297,28 @@ for building on `tvpp-9vvx` alone, and it needs more park-days before deciding (
 - Are non-soccer permits on shared surfaces (football, lacrosse on the same turf) a
   blocker for soccer? Assume yes, and include all sports when computing a field's bookings.
 - Ground truth (step D): compare one park's week with the Availability Map viewed in a browser.
+
+
+## 7. NYC Parks slots API — step H
+
+Found by the user: `$NYC_PARKS_SLOTS_API_URL?systemId=M011-SOCCER-1&startDate=2026-11-01`
+
+| Finding | Detail |
+|---|---|
+| Access | HTTP 200 JSON to an honestly identified client. Not blocked, unlike the HTML pages in step B. `robots.txt` doesn't disallow `/api/`. |
+| CORS | No `Access-Control-Allow-Origin` header, so browsers on our domain can't call it. A server-side job has to fetch it. |
+| Key | `systemId` = Athletic Facilities `system` (e.g. `M011-SOCCER-1`), so it maps **directly to fields**. No name matching needed. |
+| Window | 7 days from `startDate`, in 30-minute slots between opening and `close` (e.g. 10:00 PM). |
+| Shape | `availability`: Unix timestamp → `{in_season, permit_is_for_overlapping_field, num_pending_permits, permit_number, is_issued, permit_holder, permit_type}`. Slots that aren't listed are available. Also `fieldName` and per-day `close`. |
+| Slot kinds (Chelsea, 2 weeks) | 275 issued; 17 awaiting final approval (holder set, `is_issued: false`); 4 pending application only (no holder) |
+| Overlapping fields | 16 slots blocked by a permit on an overlapping field (Big Apple Recreational Sports). The API resolves shared surfaces itself. |
+| **Accuracy vs map** | **252 / 252 screenshot slots (100%)**, with the rule *unavailable ⇔ a permit holder is attached (issued or awaiting approval)*. Pending-only slots show as "\*Available" on the map. |
+
+**Caveats:**
+- It's undocumented, with no published terms or SLA. It could change or be blocked.
+- It's one request per field per week, roughly 370 active soccer fields × 2 weeks ≈ 740
+  requests per refresh. That needs a polite rate (one request every 1–2 seconds),
+  an honest User-Agent, and one or two refreshes a day.
+- Whether GitHub Actions IPs get the same 200 hasn't been tested yet.
+
+Reproduce: `python validation/step_h_slots_api.py` (two requests).

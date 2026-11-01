@@ -11,6 +11,13 @@ left to the player on site, or to the park's nycgovparks.org permit page, which 
 >   permits to exact fields): 92.4% of soccer permits map to a park automatically, and
 >   a 10-row alias table covers the rest.
 
+> **Update 2026-11-01 (late):** NYC Parks' own slots API
+> (`$NYC_PARKS_SLOTS_API_URL`, findings §7) matches the Availability Map
+> 100% on the Chelsea check, and gives **field-level** availability with permit holders and
+> pending permits. That likely restores the original goal (accurate "this field is open"
+> answers). The design below, built around `tvpp-9vvx`, is pending a rewrite once the
+> switch is confirmed.
+
 Decisions so far:
 
 | Question | Answer |
