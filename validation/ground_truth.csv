@@ -1,0 +1,6 @@
+date,park,gispropnum,observation,permit_id,feed_start,feed_end,map_start,map_end,map_permittee,source,notes
+2026-11-08,Chelsea Park,M011,map_available,,09:00,10:30,,,,"NYC Parks Availability Map (user, 2026-11-01)","we show free 9:00-11:00; something booked 10:30-11:00 that the feed lacks"
+2026-11-08,Chelsea Park,M011,map_available,,18:00,19:00,,,,"NYC Parks Availability Map (user, 2026-11-01)",matches our data
+2026-11-08,Chelsea Park,M011,map_booked,,16:00,17:00,,,,"NYC Parks Availability Map (user, 2026-11-01)","we show free; explained by permit 951733 below"
+2026-11-08,Chelsea Park,M011,map_booked,,19:00,21:00,,,,"NYC Parks Availability Map (user, 2026-11-01)","we show free 19:00-21:00; cause not yet identified (likely 952216, feed 18:00->17:30)"
+2026-11-08,Chelsea Park,M011,permit_time,951733,15:00,15:00,15:00,17:00,NYC Soccer Collective,"NYC Parks Availability Map (user, 2026-11-01)","zero-length in feed; start correct, end wrong; same 15:00->15:00 on all 4 dates of this permit"
