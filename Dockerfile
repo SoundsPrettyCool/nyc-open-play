@@ -1,10 +1,10 @@
-# Test and dev environment for soccer-open-play.
+# Test and dev environment for nyc-open-play.
 #
-#   docker build -t soccer-open-play .
-#   docker run --rm soccer-open-play                 # run the test suite (default)
+#   docker build -t nyc-open-play .
+#   docker run --rm nyc-open-play                 # run the test suite (default)
 #
 # Where Docker Hub is rate-limited, pass a mirror:
-#   docker build --build-arg BASE_IMAGE=mirror.gcr.io/library/python:3.12-slim -t soccer-open-play .
+#   docker build --build-arg BASE_IMAGE=mirror.gcr.io/library/python:3.12-slim -t nyc-open-play .
 ARG BASE_IMAGE=python:3.12-slim
 FROM ${BASE_IMAGE}
 

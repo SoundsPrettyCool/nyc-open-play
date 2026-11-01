@@ -16,8 +16,8 @@ OUT = Path(__file__).resolve().parent / "out"
 DATASET_ID = "qnem-b8re"
 SOCRATA = "https://data.cityofnewyork.us"
 USER_AGENT = (
-    "soccer-open-play-validation/0.1 "
-    "(personal research; low-rate; https://github.com/SoundsPrettyCool/soccer-open-play)"
+    "nyc-open-play-validation/0.1 "
+    "(personal research; low-rate; https://github.com/SoundsPrettyCool/nyc-open-play)"
 )
 
 

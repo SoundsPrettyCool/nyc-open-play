@@ -46,7 +46,7 @@ Chelsea Park on Nov 8, 2026:
 About 11% of sports permits in that dataset have an end time at or before their start time.
 Happy to share more details if that's useful to whoever maintains it.
 
-Project: [link to the site / https://github.com/SoundsPrettyCool/soccer-open-play]
+Project: [link to the site / https://github.com/SoundsPrettyCool/nyc-open-play]
 
 Thanks for running the map. It's a genuinely useful public resource.
 

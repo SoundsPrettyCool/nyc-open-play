@@ -35,10 +35,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build image
-        run: docker build -t soccer-open-play:ci .
+        run: docker build -t nyc-open-play:ci .
 
       - name: Run tests
-        run: docker run --rm soccer-open-play:ci
+        run: docker run --rm nyc-open-play:ci
 
       - name: Build data (2 weeks ahead)
         env:
@@ -48,7 +48,7 @@ jobs:
           mkdir -p app/site/data && chmod 777 app/site/data
           docker run --rm -e NYC_PARKS_SLOTS_API_URL -e SOCRATA_APP_TOKEN \
             -v "$PWD/app/site/data:/repo/app/site/data" \
-            soccer-open-play:ci python app/build.py --weeks 2 --delay 1.5
+            nyc-open-play:ci python app/build.py --weeks 2 --delay 1.5
 
       - uses: actions/configure-pages@v5
 

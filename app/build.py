@@ -41,7 +41,7 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE / "site" / "data"
 SOCRATA = "https://data.cityofnewyork.us/resource"
 SLOTS_API_ENV = "NYC_PARKS_SLOTS_API_URL"
-UA = "soccer-open-play/0.1 (free open-play finder; https://github.com/SoundsPrettyCool/soccer-open-play)"
+UA = "nyc-open-play/0.1 (free open-play finder; https://github.com/SoundsPrettyCool/nyc-open-play)"
 BOROUGHS = {"B": "Brooklyn", "M": "Manhattan", "Q": "Queens", "R": "Staten Island", "X": "Bronx"}
 MAX_FAILURE_RATE = 0.2
 
