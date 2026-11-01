@@ -224,13 +224,26 @@ rule that only valid-time permits block:
 - **The feed is missing bookings, not only mis-timing them.** On Mon Nov 9 the feed has
   3 permits (11am–1pm, 3:30–5pm, 9–10pm), but the site shows the field booked
   9am–3pm, 3:30–5:30pm and 6–10pm.
-- **What those extra blocks are is unknown.** They may be permits missing from the feed,
-  or non-permit holds (school use, Parks programs, maintenance). The screenshots only
-  show details for Nov 8. Next check: tap a Mon Nov 9 "Unavailable → Details".
+- **The extra blocks are pending permits.** The user checked Mon Nov 9: every
+  Unavailable block other than the feed's 3 permits says *"A permit pending final
+  approval makes this field at this time unavailable."* `tvpp-9vvx` lists **approved**
+  events only, so pending permits are invisible to us. On Monday, the feed's approved
+  permits were consistent with the map; all 15 mismatches were pending permits.
+- Whether the other days' "we say free, site booked" slots are also pending permits
+  hasn't been checked yet. If they are, most of the 28% disagreement is pending permits.
 
-**Verdict so far:** for Chelsea Park, `tvpp-9vvx` is **not accurate enough** to tell people
-a field is open. Before building on it, check whether this holds at other parks, and find
-out what the extra "Unavailable" blocks are (§6).
+**Two separate problems:**
+1. **Pending permits are missing from the feed.** This is a gap in what the feed covers
+   (approved events only), not bad data. The app can't see them, so it must never say
+   "open" outright. It can say "no approved permits", while noting that pending
+   applications aren't public.
+2. **Approved permits sometimes have wrong times, or are no longer valid.** On Sun Nov 8,
+   4 of 7 site permits had wrong times in the feed, and 5 feed permits weren't on the site.
+   This is a real data-quality problem, measured on one day so far.
+
+**Verdict so far:** the feed can't support a confident "open" answer at Chelsea Park.
+It may support a hedged "no approved permits on record" answer, depending on how
+often pending permits and wrong times occur at other parks (§6).
 
 **Chelsea Nov 8 overall:** out of 12 feed permits, 5 were checked by number, and **all 5
 were wrong or missing** on the site. Taken at face value, our feed gave the right
@@ -256,6 +269,9 @@ for building on `tvpp-9vvx` alone, and it needs more park-days before deciding (
 
 ## 6. Still open
 
+- **Pending permits:** do the other days' mismatches (Wed 11, Sat 14) also come from
+  pending permits? Is a pending permit a reason not to play? (Product decision.) Is there
+  any public source of pending applications?
 - **Is `tvpp-9vvx` accurate enough to build on?** At Chelsea on Nov 8, every permit
   checked by number differed from the NYC Parks site. If more parks look like this, the
   app should present feed data as "permits on record (may be out of date)" and lean on
