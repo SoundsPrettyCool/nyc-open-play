@@ -25,7 +25,7 @@ To do this, the site reads the same data the map uses, from
 IDs from the Athletic Facilities dataset on NYC Open Data). We're careful with it:
 
 - About 740 requests twice a day (one per field per week, two weeks ahead), one request every
-  1.5 seconds, with a User-Agent that identifies the project.
+  1.5 seconds, from a single small home server, with a User-Agent that identifies the project.
 - Visitors to our site never call your servers. They read a copy we refresh twice a day.
 - Every field page links back to the NYC Parks map and tells players to confirm there.
 - We stop automatically if your server refuses our requests.
@@ -33,11 +33,12 @@ IDs from the Athletic Facilities dataset on NYC Open Data). We're careful with i
 I couldn't find any documentation or terms for this endpoint, so I wanted to check with you:
 
 1. Is it OK for us to use it this way? If you'd like us to stop, we will.
-2. Our twice-daily refresh runs on GitHub Actions, and requests from there currently get a
-   "Human Verification" page from your CloudFront setup (HTTP 405), so the refresh stops itself.
-   We haven't tried to get around that. Could you allow this traffic (it identifies itself with the
-   User-Agent `nyc-open-play/0.1 (free open-play finder; https://github.com/SoundsPrettyCool/nyc-open-play)`),
-   or is there another way you'd prefer us to get the data, such as a bulk export or an official feed?
+2. We first ran the refresh on GitHub Actions, and requests from there get a "Human Verification"
+   page from your CloudFront setup (HTTP 405). We didn't try to get past that check. We now run it
+   from a home server instead, where requests aren't challenged, but we want to be sure that's
+   acceptable to you. If you'd rather we didn't, or would prefer another way to get the data (a bulk
+   export, an official feed, or allowing GitHub Actions), we'll switch. Requests identify themselves
+   with the User-Agent `nyc-open-play/0.1 (free open-play finder; https://github.com/SoundsPrettyCool/nyc-open-play)`.
 3. Is there a request rate or schedule you'd prefer?
 4. Is there anyone we should contact if the format changes?
 

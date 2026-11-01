@@ -24,11 +24,12 @@ jobs:
 
   data-smoke:
     name: Smoke-test data build (live APIs, 5 fields)
-    # Hits live APIs, so it runs only on demand or on main, not on every PR push.
-    # The full twice-daily build lives in refresh.yml.
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    # Hits live APIs, so it runs only on demand or on pushes to main, never for pull requests.
+    # Runs on the self-hosted Raspberry Pi runner (docs/RASPBERRY_PI.md): GitHub-hosted runners
+    # get NYC Parks' "Human Verification" page. The full twice-daily build lives in refresh.yml.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, ARM64, nyc-open-play]
     steps:
       - name: Check required configuration
         env:
@@ -50,7 +51,7 @@ jobs:
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
         run: |
           mkdir -p app/site/data && chmod 777 app/site/data
-          docker run --rm -e NYC_PARKS_SLOTS_API_URL -e SOCRATA_APP_TOKEN \
+          docker run --rm --user "$(id -u):$(id -g)" -e NYC_PARKS_SLOTS_API_URL -e SOCRATA_APP_TOKEN \
             -v "$PWD/app/site/data:/repo/app/site/data" \
             nyc-open-play:ci python app/build.py --weeks 1 --limit 5
 
