@@ -1,0 +1,6 @@
+# Runtime + test dependencies for app/ and validation/. Pinned for reproducible Docker/CI builds.
+requests==2.34.2
+openpyxl==3.1.5
+rapidfuzz==3.14.6
+shapely==2.2.0
+pytest==9.2.0

@@ -1,0 +1,35 @@
+# Local test environment.
+#   docker compose run --rm test         # unit tests (no network needed)
+#   docker compose run --rm build-data   # download NYC Open Data -> app/site/data (needs network)
+#   docker compose up web                # serve the site at http://localhost:8000
+services:
+  test:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-python:3.12-slim}
+    image: soccer-open-play:dev
+
+  build-data:
+    image: soccer-open-play:dev
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-python:3.12-slim}
+    command: ["python", "app/build.py"]
+    environment:
+      SOCRATA_APP_TOKEN: ${SOCRATA_APP_TOKEN:-}
+    volumes:
+      - ./app/site/data:/repo/app/site/data
+
+  web:
+    image: soccer-open-play:dev
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-python:3.12-slim}
+    command: ["python", "-m", "http.server", "8000", "--directory", "app/site"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/site:/repo/app/site:ro

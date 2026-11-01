@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Unit tests (Docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build test image
+        run: docker build -t soccer-open-play:ci .
+
+      - name: Run tests
+        run: docker run --rm soccer-open-play:ci
+
+  data-smoke:
+    name: Build data from live NYC Open Data
+    # Hits live APIs, so it runs only on demand or on main, not on every PR push.
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t soccer-open-play:ci .
+
+      - name: Build site data
+        env:
+          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+        run: |
+          mkdir -p app/site/data && chmod 777 app/site/data
+          docker run --rm -e SOCRATA_APP_TOKEN \
+            -v "$PWD/app/site/data:/repo/app/site/data" \
+            soccer-open-play:ci python app/build.py
+
+      - name: Check output
+        run: |
+          test -s app/site/data/index.json
+          python3 -c "import json; d=json.load(open('app/site/data/index.json')); n=len(d['parks']); print(n, 'parks'); assert n > 100"
