@@ -8,3 +8,11 @@ date,park,gispropnum,observation,permit_id,feed_start,feed_end,map_start,map_end
 2026-11-08,Chelsea Park,M011,permit_absent,950658,16:00,11:00,,,,"NYC Parks site (user, 2026-11-01)","in feed (end<=start) but not listed on NYC Parks; likely cancelled/changed"
 2026-11-08,Chelsea Park,M011,permit_absent,952216,18:00,17:30,,,,"NYC Parks site (user, 2026-11-01)","in feed (end<=start) but not listed on NYC Parks; likely cancelled/changed"
 2026-11-08,Chelsea Park,M011,permit_time,943204,21:00,22:00,19:00,21:00,,"NYC Parks site (user, 2026-11-01)","VALID-looking time in feed (21:00-22:00 on all 13 dates) but site shows 19:00-21:00; explains the 7-9pm block"
+2026-11-08,Chelsea Park,M011,permit_time,954701,08:00,09:00,08:00,09:00,Reato Soccer Academy LLC,"NYC Parks site screenshot (user, 2026-11-01)",match
+2026-11-08,Chelsea Park,M011,permit_time,934097,11:00,13:00,12:00,13:00,Fun Times Soccer NYC,"NYC Parks site screenshot (user, 2026-11-01)",start wrong
+2026-11-08,Chelsea Park,M011,permit_time,950003,13:00,15:00,13:00,15:00,New York City Women's Soccer,"NYC Parks site screenshot (user, 2026-11-01)",match
+2026-11-08,Chelsea Park,M011,permit_time,935180,17:00,18:00,17:00,18:00,Pickup Soccer NYC,"NYC Parks site screenshot (user, 2026-11-01)",match
+2026-11-08,Chelsea Park,M011,permit_time,943204,21:00,22:00,19:00,22:00,VOLO,"NYC Parks site screenshot (user, 2026-11-01)","supersedes earlier 19:00-21:00 estimate; screenshot shows 7:00-9:30pm rows, so ends 22:00; start wrong"
+2026-11-08,Chelsea Park,M011,permit_absent,956849,12:00,15:00,,,,"NYC Parks site screenshot (user, 2026-11-01)",in feed; not on site
+2026-11-08,Chelsea Park,M011,permit_absent,958761,13:00,15:00,,,,"NYC Parks site screenshot (user, 2026-11-01)",in feed; not on site
+2026-11-08,Chelsea Park,M011,permit_absent,950459,15:00,16:00,,,,"NYC Parks site screenshot (user, 2026-11-01)",in feed; not on site

@@ -47,7 +47,7 @@ Scripts are in [`validation/`](../validation/README.md); results are in [VALIDAT
 | B/C. Scrape nycgovparks.org permit sheets | Blocked (CloudFront 403). Dropped. |
 | F. Permit feed → park join | Done: 92.4% of soccer permits auto-match a park; 10 park names need aliases |
 | G. Park-level counting check | Done: **94.1%** of park-slots consistent; the 21 problem parks are fixed with a per-park `N` override |
-| D. Ground truth | **Checklist ready** ([STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md)): 4 parks, Nov 2–8. Needs a person with a browser, because the map is on nycgovparks.org. |
+| D. Ground truth | **In progress.** Chelsea Park Nov 8–14: the feed matches the map in only **72%** of slots, and errors mostly say "open" when booked. **Blocking.** Other parks are still to check ([STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md)). |
 | E. Churn | To do: pull `tvpp-9vvx` daily for a week and diff (do revoked permits disappear?) |
 
 ## 3. How an answer is computed
@@ -167,7 +167,7 @@ Also answered by step G: counting is consistent in 94.1% of park-slots, the 21 p
 parks get an `n_override`, and half-field permits are negligible.
 
 1. **Real-world accuracy** (step D): does "about X free" match what's on the ground or on the Availability Map? The checklist is in [STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md).
-0. **Is the permit feed accurate enough?** At Chelsea Park on Nov 8, all 5 permits checked by number were wrong or missing compared with the NYC Parks site, including one with normal-looking times (findings §4e). More parks need checking before building.
+0. **Is the permit feed accurate enough? Currently no, for Chelsea Park.** Over Nov 8–14 the feed matched the NYC Parks Availability Map in only **72% of half-hour slots**, and 46 of the 53 errors would tell people a booked field is open (findings §4e). The feed is missing many bookings, which may be non-permit holds. **Blocking question for the whole design.** Next steps: (a) find out what the extra "Unavailable" blocks are; (b) check one or two more parks; (c) contact NYC Parks about a data feed that matches the map.
 1a. **11% of permits have end ≤ start** (findings §4d–e). Decided from the Chelsea check: these permits don't block time, and the park-day answer carries a "permit times unclear, confirm on NYC Parks" warning. Re-check with more parks.
 2. Does `tvpp-9vvx` drop revoked permits promptly? (E)
 3. Are `tvpp-9vvx` times America/New_York local? (Almost certainly. Confirm once.)

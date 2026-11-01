@@ -181,6 +181,57 @@ answer carries a warning ("N permits today have unclear times; confirm on NYC Pa
 next to the link to the park's permit page. One park-day so far; more checks are needed
 to see whether the "2 of 4 not listed" ratio holds.
 
+### Chelsea Park, full week Nov 8–14 (site screenshots)
+
+The user shared screenshots of the Availability Map for Chelsea Park (Soccer-01),
+Nov 8–14. The grid is transcribed in
+[`validation/ground_truth_chelsea_grid.csv`](../validation/ground_truth_chelsea_grid.csv).
+The 4:30pm row wasn't visible, so it's left out.
+
+**Sun Nov 8, permit by permit** (the site shows permit numbers for that day):
+
+| Site | Permit | Feed | |
+|---|---|---|---|
+| 8–9am | #954701 Youth, Reato Soccer Academy | 8–9am | ✅ |
+| 10:30am–12pm | #938094 Adult, Manhattan international coed soccer | 1pm → 12pm | ❌ start |
+| 12–1pm | #934097 Adult, Fun Times Soccer NYC | 11am–1pm | ❌ start |
+| 1–3pm | #950003 Adult, NYC Women's Soccer | 1–3pm | ✅ |
+| 3pm–? (4:30 row not visible; user read 3–5) | #951733 Adult, NYC Soccer Collective | 3pm → 3pm | ❌ end |
+| 5–6pm | #935180 Adult, Pickup Soccer NYC | 5–6pm | ✅ |
+| 7–10pm | #943204 Adult, VOLO | 9–10pm | ❌ start |
+
+- **Every permit on the site is also in the feed, by ID.** 3 of the 7 have the right
+  times; 4 have a wrong start or end.
+- **5 feed permits aren't on the site:** #956849, #958761, #950459, #950658 and #952216.
+  They're probably cancelled or changed, but still in the feed.
+
+**Slot-by-slot, Nov 8–14** (27 half-hour slots, 8am–10pm, per day), using the current
+rule that only valid-time permits block:
+
+| Day | Agree | We say free, site booked | We say booked, site free |
+|---|---|---|---|
+| Sun 8 | 21 | 6 | 0 |
+| Mon 9 | 12 | **15** | 0 |
+| Tue 10 | 25 | 0 | 2 |
+| Wed 11 | 13 | 10 | 4 |
+| Thu 12 | 22 | 4 | 1 |
+| Fri 13 | 25 | 2 | 0 |
+| Sat 14 | 18 | 9 | 0 |
+| **Total** | **136 (72%)** | **46 (24%)** | **7 (4%)** |
+
+- **The feed agrees with the site in only 72% of slots.** Nearly all the errors are the
+  harmful kind: we'd tell people a field is open when it's booked.
+- **The feed is missing bookings, not only mis-timing them.** On Mon Nov 9 the feed has
+  3 permits (11am–1pm, 3:30–5pm, 9–10pm), but the site shows the field booked
+  9am–3pm, 3:30–5:30pm and 6–10pm.
+- **What those extra blocks are is unknown.** They may be permits missing from the feed,
+  or non-permit holds (school use, Parks programs, maintenance). The screenshots only
+  show details for Nov 8. Next check: tap a Mon Nov 9 "Unavailable → Details".
+
+**Verdict so far:** for Chelsea Park, `tvpp-9vvx` is **not accurate enough** to tell people
+a field is open. Before building on it, check whether this holds at other parks, and find
+out what the extra "Unavailable" blocks are (§6).
+
 **Chelsea Nov 8 overall:** out of 12 feed permits, 5 were checked by number, and **all 5
 were wrong or missing** on the site. Taken at face value, our feed gave the right
 open/booked answer for roughly half the day's hours. That is a serious accuracy concern
