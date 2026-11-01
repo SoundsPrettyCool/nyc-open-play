@@ -1,9 +1,10 @@
 # Validation findings — 2026-11-01
 
 **Verdict: GO, using a different permit source than planned.**
-NYC Open Data publishes approved Parks sports permits through an official API, and
-64% of soccer permits map to a specific field automatically. The remaining 265 distinct
-permit locations are few enough to map by hand in a one-time override table.
+NYC Open Data publishes approved Parks sports permits through an official API.
+With park-level answers (the current design), **92.4% of soccer permits map to a park
+automatically**, and a 10-row alias table covers the rest (§4b). Field-level matching
+(64% automatic) is kept below for reference.
 
 Reproduce: `python validation/step_a_inventory.py && python validation/step_f_events.py`.
 
@@ -69,7 +70,27 @@ Permit Areas names) → soccer field `system`.
   `Soccer-01` is `M158-HOCKEY-1`. Tier 1 can therefore be confidently wrong, so the
   override table must be **reviewed**, not just filled in.
 
+## 4b. Park-level matching (current design)
+
+The app now answers per park ("X of N soccer fields free"), so permits only need to
+map to a **park**.
+
+| Measure | Result |
+|---|---|
+| Soccer permits mapped to a park automatically | **8,579 / 9,284 (92.4%)** |
+| Distinct park names that don't map | **10**: East River Park, Reverend T. Wendell Foster Park, Shore Road Park and Parkway, Kissena Corridor West, Big Bush Park, Kennedy Playground /Raymond O'Connor, Addabbo Park, Scarangella Park, Roy Wilkins Park, Parque De Los Ninos. A 10-row alias table covers them. |
+| Park-hours where distinct booked labels > active soccer fields | 729 / 17,106 (**4.3%**). Worst: M165, B058 (McCarren), R106, M104 (Randall's Island). |
+
+The 4.3% is a **first rough cut**. The filter for "on a soccer surface" was too broad
+(it matched any label containing "field", including softball fields). The same broad
+filter produced 11,103 park-hours that looked fully booked, a figure not to be trusted
+yet. Tightening the filter and re-measuring is step G.
+
 ## 5. What this changes in the plan
+
+> Items 4 and 5 below describe the earlier field-level design. They are superseded by
+> park-level answers (§4b and [PLAN.md](PLAN.md) §3). Field-level mapping is now a
+> "later" feature.
 
 1. **Primary permit source → `tvpp-9vvx`** via the Socrata API. There's no scraping, no
    CORS problem (Socrata allows browser requests), and no undocumented endpoint.
