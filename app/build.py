@@ -106,6 +106,15 @@ def describe(r) -> str:
     return "; ".join(bits)
 
 
+def is_bot_challenge(r) -> bool:
+    """NYC Parks' CDN answers some networks (e.g. GitHub Actions) with a 'Human Verification'
+    page. That's a deliberate block: treat it like a 403 and stop; never try to get past it."""
+    if "json" in r.headers.get("content-type", ""):
+        return False
+    text = (r.text or "")[:5000].lower()
+    return "human verification" in text or "captcha" in text or r.headers.get("x-amzn-waf-action")
+
+
 class SlotsClient:
     def __init__(self, url: str, delay: float, cache: Path | None):
         self.url, self.delay, self.cache, self._last = url, delay, cache, 0.0
@@ -124,8 +133,8 @@ class SlotsClient:
             self._last = time.monotonic()
             self.requests += 1
             r = self.s.get(self.url, params={"systemId": system_id, "startDate": start.isoformat()}, timeout=60)
-            if r.status_code == 403:
-                raise Refused(f"403 from slots API for {system_id}")
+            if r.status_code == 403 or is_bot_challenge(r):
+                raise Refused(f"HTTP {r.status_code} ({describe(r)}) for {system_id}")
             if (r.status_code == 429 or r.status_code >= 500) and attempt < 2:
                 time.sleep(self.delay * 2 ** (attempt + 1))
                 continue
@@ -232,7 +241,9 @@ def main():
             if n % 25 == 0 or n == len(active):
                 print(f"  slots: {n}/{len(active)} fields, {client.requests} requests, {len(failures)} failed", flush=True)
     except Refused as e:
-        print(f"STOP: {e}. The slots API refused this client; not retrying.", file=sys.stderr)
+        print(f"STOP: the slots API refused this client: {e}. Not retrying and not publishing. "
+              "If this is a 'Human Verification' page, NYC Parks is blocking this network; "
+              "see docs/EMAIL_NYC_PARKS.md.", file=sys.stderr)
         sys.exit(2)
 
     (OUT / "parks").mkdir(parents=True, exist_ok=True)

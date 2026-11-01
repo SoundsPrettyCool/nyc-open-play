@@ -33,8 +33,13 @@ IDs from the Athletic Facilities dataset on NYC Open Data). We're careful with i
 I couldn't find any documentation or terms for this endpoint, so I wanted to check with you:
 
 1. Is it OK for us to use it this way? If you'd like us to stop, we will.
-2. Is there a request rate or schedule you'd prefer, or a better endpoint or bulk export we should use instead?
-3. Is there anyone we should contact if the format changes?
+2. Our twice-daily refresh runs on GitHub Actions, and requests from there currently get a
+   "Human Verification" page from your CloudFront setup (HTTP 405), so the refresh stops itself.
+   We haven't tried to get around that. Could you allow this traffic (it identifies itself with the
+   User-Agent `nyc-open-play/0.1 (free open-play finder; https://github.com/SoundsPrettyCool/nyc-open-play)`),
+   or is there another way you'd prefer us to get the data, such as a bulk export or an official feed?
+3. Is there a request rate or schedule you'd prefer?
+4. Is there anyone we should contact if the format changes?
 
 Separately, while comparing sources we noticed that the "NYC Permitted Event Information" dataset
 on NYC Open Data (`tvpp-9vvx`) often differs from the map for sports permits. For example, at
