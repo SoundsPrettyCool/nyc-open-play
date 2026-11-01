@@ -96,6 +96,18 @@ non-soccer ballfields, and those are expected to go unmatched. Things to look fo
 
 ### D. Ground truth (manual)
 
+```bash
+python validation/step_d_checklist.py [--parks M011,M010,Q099,M165] [--days 7]
+```
+
+Generates `out/d/checklist.md`, a copy of which is committed as
+`docs/STEP_D_CHECKLIST.md`. For each park it lists one comparison day (every permit we
+have, to tick off against the Availability Map) and spot-check slots with our
+predicted answer. Permits with end ≤ start are flagged ⚠ so the map's real time can be
+recorded. Re-run `step_f_events.py` first so the data is fresh.
+
+Original manual plan:
+
 - Pick 3 parks (small, medium, Prospect/Flushing-size). For ~10 date/time slots each,
   compare the parsed permits with the Availability Map.
 - Spot-check ~10 field geometries: convert EPSG:2263 → 4326 and compare against

@@ -47,7 +47,7 @@ Scripts are in [`validation/`](../validation/README.md); results are in [VALIDAT
 | B/C. Scrape nycgovparks.org permit sheets | Blocked (CloudFront 403). Dropped. |
 | F. Permit feed → park join | Done: 92.4% of soccer permits auto-match a park; 10 park names need aliases |
 | G. Park-level counting check | Done: **94.1%** of park-slots consistent; the 21 problem parks are fixed with a per-park `N` override |
-| D. Ground truth | To do: compare one park's week against the Availability Map in a browser |
+| D. Ground truth | **Checklist ready** ([STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md)): 4 parks, Nov 2–8. Needs a person with a browser, because the map is on nycgovparks.org. |
 | E. Churn | To do: pull `tvpp-9vvx` daily for a week and diff (do revoked permits disappear?) |
 
 ## 3. How an answer is computed
@@ -165,7 +165,8 @@ shares `gispropnum`; scraping is moot.
 Also answered by step G: counting is consistent in 94.1% of park-slots, the 21 problem
 parks get an `n_override`, and half-field permits are negligible.
 
-1. **Real-world accuracy** (step D): does "about X free" match what's on the ground or on the Availability Map?
+1. **Real-world accuracy** (step D): does "about X free" match what's on the ground or on the Availability Map? The checklist is in [STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md).
+1a. **11% of permits have end ≤ start** (findings §4d). Assume a default length, block to end of day, or answer "Unknown"? Decide after step D shows what the map says for those permits.
 2. Does `tvpp-9vvx` drop revoked permits promptly? (E)
 3. Are `tvpp-9vvx` times America/New_York local? (Almost certainly. Confirm once.)
 4. Should `n_override` be recomputed automatically on each ingest (any park where permits ever exceed `N`), or reviewed by hand?
