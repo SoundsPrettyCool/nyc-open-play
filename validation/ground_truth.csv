@@ -7,3 +7,4 @@ date,park,gispropnum,observation,permit_id,feed_start,feed_end,map_start,map_end
 2026-11-08,Chelsea Park,M011,permit_time,938094,13:00,12:00,10:30,12:00,,"NYC Parks site (user, 2026-11-01)","end correct, START wrong; explains the 10:30-11:00 booking"
 2026-11-08,Chelsea Park,M011,permit_absent,950658,16:00,11:00,,,,"NYC Parks site (user, 2026-11-01)","in feed (end<=start) but not listed on NYC Parks; likely cancelled/changed"
 2026-11-08,Chelsea Park,M011,permit_absent,952216,18:00,17:30,,,,"NYC Parks site (user, 2026-11-01)","in feed (end<=start) but not listed on NYC Parks; likely cancelled/changed"
+2026-11-08,Chelsea Park,M011,permit_time,943204,21:00,22:00,19:00,21:00,,"NYC Parks site (user, 2026-11-01)","VALID-looking time in feed (21:00-22:00 on all 13 dates) but site shows 19:00-21:00; explains the 7-9pm block"

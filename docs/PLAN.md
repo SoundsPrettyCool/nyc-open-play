@@ -167,6 +167,7 @@ Also answered by step G: counting is consistent in 94.1% of park-slots, the 21 p
 parks get an `n_override`, and half-field permits are negligible.
 
 1. **Real-world accuracy** (step D): does "about X free" match what's on the ground or on the Availability Map? The checklist is in [STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md).
+0. **Is the permit feed accurate enough?** At Chelsea Park on Nov 8, all 5 permits checked by number were wrong or missing compared with the NYC Parks site, including one with normal-looking times (findings §4e). More parks need checking before building.
 1a. **11% of permits have end ≤ start** (findings §4d–e). Decided from the Chelsea check: these permits don't block time, and the park-day answer carries a "permit times unclear, confirm on NYC Parks" warning. Re-check with more parks.
 2. Does `tvpp-9vvx` drop revoked permits promptly? (E)
 3. Are `tvpp-9vvx` times America/New_York local? (Almost certainly. Confirm once.)
