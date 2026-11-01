@@ -115,13 +115,15 @@ def main():
     soccer_value = a.soccer_value or (None if soccer_col in soccer_named else "soccer")
     values_in_soccer_col = Counter(str(r.get(soccer_col)) for r in rows) if soccer_col else Counter()
 
+    # Without an override, a row is soccer if ANY soccer-named column is truthy
+    # (the real dataset has both regulation_soccer and nonregulation_soccer).
+    flag_cols = [soccer_col] if a.soccer_col or soccer_value else soccer_named
+
     def is_soccer(r):
-        v = r.get(soccer_col)
-        if v is None:
-            return False
         if soccer_value:
-            return soccer_value.lower() in str(v).lower()
-        return str(v).strip().lower() not in FALSY
+            v = r.get(soccer_col)
+            return v is not None and soccer_value.lower() in str(v).lower()
+        return any(str(r.get(c)).strip().lower() not in FALSY for c in flag_cols if r.get(c) is not None)
 
     soccer = [r for r in rows if soccer_col and is_soccer(r)]
 
@@ -164,7 +166,7 @@ def main():
         "row_keys": keys,
         "soccer_named_columns": soccer_named,
         "columns_with_soccer_in_values": dict(soccer_valued.most_common(10)),
-        "soccer_col_used": soccer_col,
+        "soccer_cols_used": flag_cols,
         "soccer_match": f"substring '{soccer_value}'" if soccer_value else "truthy value",
         "top_values_in_soccer_col": dict(values_in_soccer_col.most_common(10)),
         "soccer_rows": len(soccer),

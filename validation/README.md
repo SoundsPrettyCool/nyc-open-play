@@ -35,7 +35,21 @@ python validation/step_a_inventory.py --offline --soccer-col <col> --park-col <c
 
 Outputs: `out/a/columns.csv`, `soccer_fields.csv`, `soccer_parks.csv`, `summary.json`.
 
-### B. Permit inventory
+### F. Official permit feed join (primary path)
+
+```bash
+python validation/step_f_events.py [--offline]
+```
+
+nycgovparks.org returns a CloudFront 403 to automated clients (see
+[`docs/VALIDATION_FINDINGS.md`](../docs/VALIDATION_FINDINGS.md)), so steps B/C don't
+work from a server. This step pulls sports permits from NYC Open Data
+**NYC Permitted Event Information** (`tvpp-9vvx`). It maps each `event_location`
+(`Park: [Zone-]Sport-NN`) to a park through Parks Properties (`enfh-gkve`), and then to
+a soccer field `system` ID. Writes `out/f/location_map.csv`, which seeds the manual
+override table, and `out/f/summary.json`.
+
+### B. Permit inventory (blocked: kept for reference)
 
 First open one park's issued-permits page in a browser and note the exact URL of the
 page and of its spreadsheet download. Also open the Field & Court Permit
