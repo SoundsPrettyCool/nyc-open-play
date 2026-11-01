@@ -254,6 +254,9 @@ def main():
             "id": pid, "name": name, "aliases": sorted({info.get("name311")} - {None, name}),
             "borough": park["borough"], "center": center,
             "fields": sum(1 for f in park_fields if f["status"] == "Active"),
+            # Compact availability for the search page: [field id, data status, [[start, end, state]]].
+            "f": [[f["id"], f["data"], [[i["start"], i["end"], i["state"][0]] for i in f["intervals"]]]
+                  for f in park_fields if f["status"] == "Active"],
         })
 
     index.sort(key=lambda p: p["name"].lower())
