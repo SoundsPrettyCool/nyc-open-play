@@ -145,16 +145,54 @@
   }
 
   // ---------- home ----------
+  // ---------- search (typo-tolerant) ----------
+  function editDistance(a, b, max) {
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    var prev = [], cur, i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur = [i];
+      var best = i;
+      for (j = 1; j <= b.length; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        if (cur[j] < best) best = cur[j];
+      }
+      if (best > max) return max + 1;
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  // Score how well one typed term matches a park's words: 0 = exact/substring, 1 = prefix of a word
+  // within a typo, 2 = whole word within a typo; -1 = no match.
+  function termScore(term, hay, words) {
+    if (hay.indexOf(term) !== -1) return 0;
+    if (term.length < 3) return -1;
+    var max = term.length >= 8 ? 2 : 1, score = -1;
+    words.forEach(function (w) {
+      if (w.length >= term.length && editDistance(term, w.slice(0, term.length), max) <= max) score = score === -1 ? 1 : Math.min(score, 1);
+      else if (editDistance(term, w, max) <= max) score = score === -1 ? 2 : Math.min(score, 2);
+    });
+    return score;
+  }
+  function searchScore(p, terms) {
+    var hay = norm([p.name].concat(p.aliases || []).join(" ")), words = hay.split(" "), total = 0;
+    for (var i = 0; i < terms.length; i++) {
+      var s = termScore(terms[i], hay, words);
+      if (s < 0) return -1;
+      total += s;
+    }
+    return total;
+  }
+
   function renderHome() {
     var q = norm(state.q), terms = q ? q.split(" ") : [];
-    var parks = state.index.parks.filter(function (p) {
-      if (state.borough && p.borough !== state.borough) return false;
-      if (!terms.length) return true;
-      var hay = norm([p.name].concat(p.aliases || []).join(" "));
-      return terms.every(function (t) { return hay.indexOf(t) !== -1; });
-    }).map(function (p) { return { p: p, c: parkCounts(p, state.day, state.time) }; });
+    var parks = state.index.parks.map(function (p) {
+      return { p: p, s: (state.borough && p.borough !== state.borough) ? -1 : (terms.length ? searchScore(p, terms) : 0) };
+    }).filter(function (x) { return x.s >= 0; }).map(function (x) {
+      x.c = parkCounts(x.p, state.day, state.time); return x;
+    });
     parks.sort(function (a, b) {
-      return (b.c.open > 0) - (a.c.open > 0) || b.c.open - a.c.open || a.p.name.localeCompare(b.p.name);
+      return a.s - b.s || (b.c.open > 0) - (a.c.open > 0) || b.c.open - a.c.open || a.p.name.localeCompare(b.p.name);
     });
     var anyOpen = parks.filter(function (x) { return x.c.open > 0; }).length;
 
