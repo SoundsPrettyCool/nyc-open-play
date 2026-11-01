@@ -46,7 +46,7 @@ Scripts are in [`validation/`](../validation/README.md); results are in [VALIDAT
 | A. Open Data inventory | Done |
 | B/C. Scrape nycgovparks.org permit sheets | Blocked (CloudFront 403). Dropped. |
 | F. Permit feed → park join | Done: 92.4% of soccer permits auto-match a park; 10 park names need aliases |
-| G. Park-level counting check | **To do**: tighten which permits count as "using a soccer surface", then measure how often booked > fields |
+| G. Park-level counting check | Done: **94.1%** of park-slots consistent; the 21 problem parks are fixed with a per-park `N` override |
 | D. Ground truth | To do: compare one park's week against the Availability Map in a browser |
 | E. Churn | To do: pull `tvpp-9vvx` daily for a week and diff (do revoked permits disappear?) |
 
@@ -54,11 +54,15 @@ Scripts are in [`validation/`](../validation/README.md); results are in [VALIDAT
 
 For park `P` and time window `T`:
 
-1. `N` = active soccer-capable fields in `P`, from Athletic Facilities.
+1. `N` = active soccer-capable fields in `P`, from Athletic Facilities, or the park's
+   `n_override` when it has one. The override is the larger of the dataset count and the
+   distinct soccer-surface labels seen in permits; step G found 21 parks that need it.
 2. `B` = **distinct permit labels** (the part of `event_location` after the colon, e.g.
    `North Meadow-Soccer-03`) at `P` that overlap `T` and are on a soccer-capable
-   surface: soccer permits, plus other sports whose label names a soccer, football
-   or multi-purpose field.
+   surface. That means soccer permits, plus other sports whose label names a soccer,
+   football, multi-purpose, MPPA, turf or futsal surface; a bare "field" label counts
+   only for field sports. One permit row can list several locations, separated by
+   commas; count each.
 3. `free = N − B`.
 
 | Condition | Answer shown |
@@ -75,9 +79,9 @@ Below every answer:
 - a link to the park's nycgovparks.org permit page for the exact field. The URL
   pattern still needs confirming in a browser.
 
-The counts are approximate: half-field permits, and soccer played on surfaces the
-fields dataset doesn't flag, both throw them off. The wording says "about", and the
-permit list lets users judge for themselves.
+The counts are approximate, mainly because the fields dataset sometimes undercounts a
+park's surfaces (handled with `n_override`). The wording says "about", and the permit
+list lets users judge for themselves.
 
 **Free windows** for the day/week view: split the day into 30-minute slots, compute
 `free` for each slot, and merge runs of slots where `free > 0`. Result: "Open play
@@ -108,7 +112,7 @@ likely 7–9am, 12–3pm".
 
 ### Data model
 
-- `park` (gispropnum, name, borough, aliases[], centroid, boundary MultiPolygon 4326, permit_page_url)
+- `park` (gispropnum, name, borough, aliases[], centroid, boundary MultiPolygon 4326, permit_page_url, n_override nullable)
 - `park_alias` (permit_park_name → gispropnum). Seeded with the 10 unmatched names.
 - `field` (system, gispropnum, primary_sport, surface, lit, dimensions, geom 4326, featurestatus).
   Used for `N` and for map context only.
@@ -158,10 +162,13 @@ fields are.
 Answered: column names, soccer marker, park ID; geometry is WGS84; Parks Properties
 shares `gispropnum`; scraping is moot.
 
-1. **Counting accuracy** (step G): after tightening the surface filter, how often is `B > N`? Which parks need a manual `N` override?
+Also answered by step G: counting is consistent in 94.1% of park-slots, the 21 problem
+parks get an `n_override`, and half-field permits are negligible.
+
+1. **Real-world accuracy** (step D): does "about X free" match what's on the ground or on the Availability Map?
 2. Does `tvpp-9vvx` drop revoked permits promptly? (E)
 3. Are `tvpp-9vvx` times America/New_York local? (Almost certainly. Confirm once.)
-4. How should half-field permits (`Soccer-01 E`) count: 1 field or 0.5?
+4. Should `n_override` be recomputed automatically on each ingest (any park where permits ever exceed `N`), or reviewed by hand?
 5. Is the ~1-month horizon acceptable? Season-long data would need NYC Parks to cooperate (email / FOIL).
 6. What's the per-park nycgovparks.org permit-page URL pattern? (Check in a browser.)
 7. What to show between seasons?
@@ -172,7 +179,7 @@ shares `gispropnum`; scraping is moot.
 
 | Piece | Effort |
 |---|---|
-| Remaining validation (G, D, E) | 1–2 days of work, plus a week of passive daily pulls |
+| Remaining validation (D, E) | about 1 day of work, plus a week of passive daily pulls |
 | Ingest + park matching + alias table | 2–4 days |
 | API + DB (answers, free windows) | 3–5 days |
 | Web UI + map | 1–2 weeks |
