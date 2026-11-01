@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from collections import Counter, defaultdict
@@ -89,6 +90,22 @@ def slots_api_url() -> str:
     return url
 
 
+def describe(r) -> str:
+    """Short, URL-free description of an unexpected response: content type, server/CDN
+    headers and the HTML title or first words, to tell a WAF block from an app error."""
+    h = r.headers
+    bits = [h.get("content-type", "no content-type")]
+    for k in ("server", "x-cache", "via"):
+        if h.get(k):
+            bits.append(f"{k}={h[k]}")
+    text = r.text or ""
+    m = re.search(r"<title[^>]*>(.*?)</title>", text, re.I | re.S)
+    snippet = " ".join((m.group(1) if m else re.sub(r"<[^>]+>", " ", text))[:100].split())
+    if snippet:
+        bits.append(f"page: {snippet!r}")
+    return "; ".join(bits)
+
+
 class SlotsClient:
     def __init__(self, url: str, delay: float, cache: Path | None):
         self.url, self.delay, self.cache, self._last = url, delay, cache, 0.0
@@ -113,7 +130,7 @@ class SlotsClient:
                 time.sleep(self.delay * 2 ** (attempt + 1))
                 continue
             if not r.ok:
-                raise SlotsError(f"HTTP {r.status_code} ({r.headers.get('content-type', 'no content-type')})")
+                raise SlotsError(f"HTTP {r.status_code} ({describe(r)})")
             try:
                 data = r.json()
             except ValueError:
