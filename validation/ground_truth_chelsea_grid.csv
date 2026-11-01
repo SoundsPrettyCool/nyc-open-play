@@ -1,0 +1,31 @@
+# NYC Parks Availability Map, Chelsea Park Soccer-01, screenshots shared by the user on 2026-11-01.
+# U = Unavailable, A = Available (Tue 9:00-10:30 shown as "*Available" with a Details link; recorded as A).
+# The 4:30pm row was not visible in the screenshots and is omitted.
+slot,2026-11-08,2026-11-09,2026-11-10,2026-11-11,2026-11-12,2026-11-13,2026-11-14
+08:00,U,A,A,A,A,A,A
+08:30,U,A,A,A,A,A,A
+09:00,A,U,A,U,A,A,U
+09:30,A,U,A,U,A,A,U
+10:00,A,U,A,U,A,A,U
+10:30,U,U,A,U,A,A,U
+11:00,U,U,A,U,U,U,U
+11:30,U,U,A,U,U,U,U
+12:00,U,U,A,U,U,U,U
+12:30,U,U,A,U,U,U,U
+13:00,U,U,U,A,A,U,U
+13:30,U,U,U,U,A,U,U
+14:00,U,U,A,U,A,U,U
+14:30,U,U,U,U,A,U,U
+15:00,U,A,U,U,A,A,U
+15:30,U,U,U,A,U,U,U
+16:00,U,U,U,A,U,U,U
+17:00,U,U,U,A,U,U,U
+17:30,U,A,A,A,U,U,U
+18:00,A,U,U,U,U,U,U
+18:30,A,U,U,U,U,U,U
+19:00,U,U,U,U,U,U,U
+19:30,U,U,U,U,U,U,U
+20:00,U,U,U,U,U,U,U
+20:30,U,U,U,U,U,U,U
+21:00,U,U,U,U,U,U,U
+21:30,U,U,U,U,U,U,U

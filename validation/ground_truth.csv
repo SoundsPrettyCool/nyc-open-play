@@ -1,0 +1,20 @@
+date,park,gispropnum,observation,permit_id,feed_start,feed_end,map_start,map_end,map_permittee,source,notes
+2026-11-08,Chelsea Park,M011,map_available,,09:00,10:30,,,,"NYC Parks Availability Map (user, 2026-11-01)","we show free 9:00-11:00; something booked 10:30-11:00 that the feed lacks"
+2026-11-08,Chelsea Park,M011,map_available,,18:00,19:00,,,,"NYC Parks Availability Map (user, 2026-11-01)",matches our data
+2026-11-08,Chelsea Park,M011,map_booked,,16:00,17:00,,,,"NYC Parks Availability Map (user, 2026-11-01)","we show free; explained by permit 951733 below"
+2026-11-08,Chelsea Park,M011,map_booked,,19:00,21:00,,,,"NYC Parks Availability Map (user, 2026-11-01)","we show free 19:00-21:00; cause not yet identified (likely 952216, feed 18:00->17:30)"
+2026-11-08,Chelsea Park,M011,permit_time,951733,15:00,15:00,15:00,17:00,NYC Soccer Collective,"NYC Parks Availability Map (user, 2026-11-01)","zero-length in feed; start correct, end wrong; same 15:00->15:00 on all 4 dates of this permit"
+2026-11-08,Chelsea Park,M011,permit_time,938094,13:00,12:00,10:30,12:00,,"NYC Parks site (user, 2026-11-01)","end correct, START wrong; explains the 10:30-11:00 booking"
+2026-11-08,Chelsea Park,M011,permit_absent,950658,16:00,11:00,,,,"NYC Parks site (user, 2026-11-01)","in feed (end<=start) but not listed on NYC Parks; likely cancelled/changed"
+2026-11-08,Chelsea Park,M011,permit_absent,952216,18:00,17:30,,,,"NYC Parks site (user, 2026-11-01)","in feed (end<=start) but not listed on NYC Parks; likely cancelled/changed"
+2026-11-08,Chelsea Park,M011,permit_time,943204,21:00,22:00,19:00,21:00,,"NYC Parks site (user, 2026-11-01)","VALID-looking time in feed (21:00-22:00 on all 13 dates) but site shows 19:00-21:00; explains the 7-9pm block"
+2026-11-08,Chelsea Park,M011,permit_time,954701,08:00,09:00,08:00,09:00,Reato Soccer Academy LLC,"NYC Parks site screenshot (user, 2026-11-01)",match
+2026-11-08,Chelsea Park,M011,permit_time,934097,11:00,13:00,12:00,13:00,Fun Times Soccer NYC,"NYC Parks site screenshot (user, 2026-11-01)",start wrong
+2026-11-08,Chelsea Park,M011,permit_time,950003,13:00,15:00,13:00,15:00,New York City Women's Soccer,"NYC Parks site screenshot (user, 2026-11-01)",match
+2026-11-08,Chelsea Park,M011,permit_time,935180,17:00,18:00,17:00,18:00,Pickup Soccer NYC,"NYC Parks site screenshot (user, 2026-11-01)",match
+2026-11-08,Chelsea Park,M011,permit_time,943204,21:00,22:00,19:00,22:00,VOLO,"NYC Parks site screenshot (user, 2026-11-01)","supersedes earlier 19:00-21:00 estimate; screenshot shows 7:00-9:30pm rows, so ends 22:00; start wrong"
+2026-11-08,Chelsea Park,M011,permit_absent,956849,12:00,15:00,,,,"NYC Parks site screenshot (user, 2026-11-01)",in feed; not on site
+2026-11-08,Chelsea Park,M011,permit_absent,958761,13:00,15:00,,,,"NYC Parks site screenshot (user, 2026-11-01)",in feed; not on site
+2026-11-08,Chelsea Park,M011,permit_absent,950459,15:00,16:00,,,,"NYC Parks site screenshot (user, 2026-11-01)",in feed; not on site
+2026-11-09,Chelsea Park,M011,pending_permits,,,,,,,"NYC Parks site (user, 2026-11-01)","all Unavailable blocks other than the 3 feed permits show 'A permit pending final approval makes this field at this time unavailable.' tvpp-9vvx lists approved events only"
+2026-11-02,Chelsea Park,M011,permit_time,943204,21:00,22:00,18:00,22:00,VOLO,"NYC Parks site screenshot (user, 2026-11-01)","start wrong again but by a different amount than Nov 8 (19:00); end correct both times"

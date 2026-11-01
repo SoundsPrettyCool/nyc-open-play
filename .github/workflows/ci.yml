@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Unit tests (Docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build test image
+        run: docker build -t nyc-open-play:ci .
+
+      - name: Run tests
+        run: docker run --rm nyc-open-play:ci
+
+  data-smoke:
+    name: Smoke-test data build (live APIs, 5 fields)
+    # Hits live APIs, so it runs only on demand or on main, not on every PR push.
+    # The full twice-daily build lives in refresh.yml.
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required configuration
+        env:
+          NYC_PARKS_SLOTS_API_URL: ${{ secrets.NYC_PARKS_SLOTS_API_URL }}
+        run: |
+          if [ -z "$NYC_PARKS_SLOTS_API_URL" ]; then
+            echo "::error::Repository secret NYC_PARKS_SLOTS_API_URL is not set. Add it under Settings -> Secrets and variables -> Actions -> Secrets."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t nyc-open-play:ci .
+
+      - name: Build site data
+        env:
+          NYC_PARKS_SLOTS_API_URL: ${{ secrets.NYC_PARKS_SLOTS_API_URL }}
+          SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+        run: |
+          mkdir -p app/site/data && chmod 777 app/site/data
+          docker run --rm -e NYC_PARKS_SLOTS_API_URL -e SOCRATA_APP_TOKEN \
+            -v "$PWD/app/site/data:/repo/app/site/data" \
+            nyc-open-play:ci python app/build.py --weeks 1 --limit 5
+
+      - name: Check output
+        run: |
+          test -s app/site/data/index.json
+          python3 -c "import json; d=json.load(open('app/site/data/index.json')); n=len(d['parks']); print(n, 'parks'); assert n >= 1"

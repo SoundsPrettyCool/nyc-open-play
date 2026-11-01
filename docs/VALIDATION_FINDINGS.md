@@ -1,0 +1,324 @@
+# Validation findings — 2026-11-01
+
+> **Update 2026-11-01 (late): a better source exists.** The NYC Parks Availability Map is
+> backed by a JSON endpoint, `$NYC_PARKS_SLOTS_API_URL`, keyed by the same
+> `system` field ID as Athletic Facilities. It matches the map **100%** on the Chelsea
+> screenshots, and it includes pending permits, overlapping fields and permit holders.
+> See §7. The `tvpp-9vvx` findings below remain as the record of why the Open Data feed
+> wasn't enough.
+
+**Verdict: GO, using a different permit source than planned.**
+NYC Open Data publishes approved Parks sports permits through an official API.
+With park-level answers (the current design), **92.4% of soccer permits map to a park
+automatically**, and a 10-row alias table covers the rest (§4b). Field-level matching
+(64% automatic) is kept below for reference.
+
+Reproduce: `python validation/step_a_inventory.py && python validation/step_f_events.py`.
+
+## 1. Athletic Facilities (`qnem-b8re`) — step A
+
+| Finding | Detail |
+|---|---|
+| Rows | 6,951 facilities |
+| Soccer marker | Two checkbox columns, `regulation_soccer` and `nonregulation_soccer`. Use **either**. |
+| Soccer fields | **410** in **215 parks** (370 Active, 31 Inactive, 6 Closed Temporarily, 3 Removed) |
+| Park ID | `gispropnum` (e.g. `B073`). Pattern: borough letter + 3 digits, sometimes a letter suffix. |
+| Field ID | `system`, e.g. `B073-ZN15-SOCCER-3`, `M105-SOCCER-1`, `B008-03-FOOTBALL-1` |
+| Field names | **None.** There's no park name or human-readable field name. Names come from Parks Properties. |
+| Geometry | `multipolygon` for **all** rows, **already WGS84** via the API. No 2263→4326 conversion needed. |
+| Status | `featurestatus` (Active / Inactive / Closed Temporarily / Removed). This partly covers "field is closed". |
+| Shared use | Most soccer fields are also permittable for other sports (youth football 228, adult football 174, frisbee 144, lacrosse 102, rugby 85…). The **physical surface** matters, not the sport. |
+| `primary_sport` | Codes: `SCR` 292, `MPPA` 62, `FTB` 45, … |
+
+## 2. nycgovparks.org — step B: BLOCKED
+
+- `robots.txt` returns 200 and doesn't disallow `/permits/`.
+- Every page, **including the homepage**, returns a **CloudFront 403 "Request blocked"** to
+  an honestly identified client from this cloud environment.
+- We didn't try to get around it (e.g. by faking a browser user-agent). The site is
+  plainly blocking automated or cloud-hosted clients.
+- Untested: whether a residential IP gets through. Either way, building on a source that
+  actively blocks bots is a bad foundation. **Dropped as the primary source.**
+
+## 3. Official alternative: NYC Permitted Event Information (`tvpp-9vvx`)
+
+The source was found while investigating step B. Step F scores the join.
+
+| Finding | Detail |
+|---|---|
+| Publisher / freshness | NYC Open Data, updated **daily** (last update 2026-10-31) |
+| Horizon | Approved events "within the next month": 13,448 sport permits start in the next 31 days, 58 later |
+| Sports permits | 15,458 rows with `event_type` `Sport - Youth` / `Sport - Adult`, all `event_agency = Parks Department` |
+| Soccer permits | **9,284** (`event_name` = `Soccer - Non Regulation` or `Soccer -Regulation`) |
+| Time | `start_date_time` / `end_date_time` per booking, as local time with no time zone |
+| Location | `event_location` = `Park Name: [Zone-]Sport-NN`, e.g. `Central Park: North Meadow-Soccer-03` |
+| **Permittee** | **Not published.** `event_name` is just the sport (27 distinct values). |
+| `cemsid` | Present, but only 12 of 15,458 appear in Parks Permit Areas (`c5vm-g2dk`). **Not a usable join key** for fields. |
+
+## 4. Join scoring — step F
+
+Path: `event_location` → park name → `gispropnum` (Parks Properties `enfh-gkve` +
+Permit Areas names) → soccer field `system`.
+
+| Tier | Share of soccer permits |
+|---|---|
+| 1. Same sport token + number as `system` | 52.9% |
+| 2. Unique number among the park's soccer fields | 7.8% |
+| 3. Park has exactly one active soccer field | 3.7% |
+| **Auto-matched total** | **64.3%** (163 of 265 locations) |
+| Ambiguous (several candidate fields) | 26.9%, mostly Randall's Island (35 labels), Flushing Meadows, Crotona |
+| Park name not resolved | 7.6% (e.g. "East River Park", "Reverend T. Wendell Foster Park") |
+| Park has no soccer-flagged field | 1.2% (e.g. Leif Ericson "Dust Bowl") |
+
+- Only **265 distinct soccer permit locations** exist; the top 100 cover 71% of permits.
+- 146 of 370 active soccer fields have at least one permit in the window.
+- Numbering doesn't line up across sources. McCarren's `Soccer-01` is
+  `B058-ZN02-FOOTBALL-1`, and `B058-ZN02-SOCCER-1` is Inactive. Robert Moses Playground's
+  `Soccer-01` is `M158-HOCKEY-1`. Tier 1 can therefore be confidently wrong, so the
+  override table must be **reviewed**, not just filled in.
+
+## 4b. Park-level matching (current design)
+
+The app now answers per park ("X of N soccer fields free"), so permits only need to
+map to a **park**.
+
+| Measure | Result |
+|---|---|
+| Soccer permits mapped to a park automatically | **8,579 / 9,284 (92.4%)** |
+| Distinct park names that don't map | **10**: East River Park, Reverend T. Wendell Foster Park, Shore Road Park and Parkway, Kissena Corridor West, Big Bush Park, Kennedy Playground /Raymond O'Connor, Addabbo Park, Scarangella Park, Roy Wilkins Park, Parque De Los Ninos. A 10-row alias table covers them. |
+| Park-hours where distinct booked labels > active soccer fields | 729 / 17,106 (**4.3%**). Worst: M165, B058 (McCarren), R106, M104 (Randall's Island). |
+
+The 4.3% was a first rough cut with a filter that was too broad. Step G (§4c)
+replaces it.
+
+## 4c. Counting check — step G
+
+`python validation/step_g_counting.py`, using step F's downloaded data. For each park
+and 30-minute slot, it compares `N` (active soccer fields in the dataset) with `B`
+(distinct permit labels on soccer-type surfaces).
+
+**Surface rule:**
+- Soccer permits always count.
+- Other sports count only if the label names soccer, football, multi-purpose, MPPA,
+  turf or futsal.
+- A bare "field" label counts only for field sports.
+
+This skipped 4,468 baseball, softball, tennis and basketball entries.
+
+| Measure | Result |
+|---|---|
+| Park-slots with any booking | 33,444 (149 parks) |
+| **Consistent (`B ≤ N`)** | **94.1%** |
+| `B > N` | 2.2% |
+| `N = 0` but permits exist | 3.7% |
+| Prime time (weekends 9–6, weekdays 5–9pm) | same picture: 94.5% consistent |
+| Problem parks | **21**. Every one has a dataset count of 0 or 1 where permits show at most 2. |
+| Multi-location permit rows | 84 rows list several fields at once (mostly Randall's Island); each field counts |
+| Half-field labels | Only 1 in the whole feed (`Riverside Park: 107th/108th St-Soccer-01 E`). Not an issue. |
+| Unmatched park names | Same 10 as §4b. Riverside Park now resolves, because official names are preferred over Permit Areas aliases. |
+
+**Causes of the problem parks:**
+- **No soccer fields in the dataset**, but soccer permits issued: 9 parks, e.g. Leif
+  Ericson, Rainey, Frank Golden, Rockaway Beach Boardwalk.
+- **Soccer fields all inactive or closed in the dataset**, but still permitted:
+  Prall Playground, City Line Park.
+- **Permits use more surfaces than the dataset lists**: 10 parks, e.g. Baruch
+  Playground (79% of its slots), Seton Park, Alley Athletic, Hinton.
+
+**Fix:** a per-park `N` override, set to the larger of the dataset's active count and
+the distinct soccer-surface labels seen in permits. A permit proves the surface exists.
+`problem_parks.csv` includes the suggested value. With that, every park-slot is
+consistent. That result follows from how the override is defined, so it is not an
+independent accuracy measure; step D (ground truth) is still needed for that.
+
+**Side finding:** in slots where a park has *any* permit, the park is fully booked 58%
+of the time, because many parks have only 1–2 fields. That means the free-windows view
+(open time *between* permits) is likely the most useful feature.
+
+## 4d. Permit time quality (found while preparing step D)
+
+| Finding | Detail |
+|---|---|
+| **End at or before start** | **1,688 of 15,458 sports permits (11%)**, all same-day: 409 zero-length, the rest ending 1–7 hours *before* they start (e.g. Chelsea Park #938094, Nov 8, 1:00pm → 12:00pm). There's no consistent offset (it isn't an AM/PM mix-up), so the true end time can't be inferred. |
+| Effect on step G | These permits covered zero slots, so they were **left out**. Bookings are therefore **undercounted**, and the real "fully booked" share is somewhat higher than 58%. |
+| Repeated `event_id` | 2,707 IDs repeat, up to 30 rows each. These are **recurring permits expanded one row per date** (no identical rows, never two on the same date). Not duplicates. |
+| Long permits | None over 24 hours; 1,580 run 6–24 hours (e.g. all-day 8am–11pm league days). |
+
+**Decision needed** (informed by step D): how to treat a permit whose end ≤ start.
+- Option A: assume a default length (e.g. the median 2 hours).
+- Option B: block from the start time to the end of that day.
+- Option C: show it as "permit time unclear" and answer "Unknown" for those slots.
+
+The step D checklist flags each such permit (⚠) so the map's real time can be recorded.
+
+## 4e. Ground truth — step D (in progress)
+
+Observations are logged in [`validation/ground_truth.csv`](../validation/ground_truth.csv).
+
+**Chelsea Park, Sun Nov 8** (map checked by the user on Nov 1):
+
+| Time | Map | Our data | Verdict |
+|---|---|---|---|
+| 9–10:30am | Available | Free 9–11am | ✅ mostly. 10:30–11 is ⚠ permit #938094, whose real start is earlier than the feed says. |
+| 4–5pm | Booked | Free | ❌ Caused by permit #951733 (below) |
+| 6–7pm | Available | Free | ✅ |
+| 7–9pm | Booked | Free | ❌ Permit #943204: the site says 7–9pm, but the feed has a normal-looking **9–10pm** |
+| All other hours | Booked | Booked | ✅ |
+
+**The four ⚠ permits that day, checked against the NYC Parks site:**
+
+| Permit | Feed | NYC Parks site | Problem |
+|---|---|---|---|
+| 951733 | 3pm → 3pm | 3–5pm (Sport - Adult, NYC Soccer Collective) | End wrong (same on all 4 of its dates) |
+| 938094 | 1pm → 12pm | 10:30am–12pm | **Start** wrong |
+| 950658 | 4pm → 11am | Not listed | Probably cancelled/changed, but still in the feed |
+| 952216 | 6pm → 5:30pm | Not listed | Probably cancelled/changed, but still in the feed |
+
+- **Correction:** a permit with a normal-looking time can also be wrong. #943204 is
+  9–10pm on all 13 of its dates in the feed, but 7–9pm on the site. So the feed's times
+  are not reliable even when they look valid. How often that happens is unknown: 1 of
+  the 8 valid-time permits that day was checked by permit number.
+- For ⚠ permits, **neither time is reliable**, and **2 of 4 aren't real bookings at all.**
+  Ignoring them, blocking from their start time, or guessing a length would each have
+  given wrong answers.
+- The site shows permittee names; the feed doesn't.
+
+**Rule adopted:** ⚠ permits don't block time. When a park has any ⚠ permit that day, the
+answer carries a warning ("N permits today have unclear times; confirm on NYC Parks")
+next to the link to the park's permit page. One park-day so far; more checks are needed
+to see whether the "2 of 4 not listed" ratio holds.
+
+### Chelsea Park, full week Nov 8–14 (site screenshots)
+
+The user shared screenshots of the Availability Map for Chelsea Park (Soccer-01),
+Nov 8–14. The grid is transcribed in
+[`validation/ground_truth_chelsea_grid.csv`](../validation/ground_truth_chelsea_grid.csv).
+The 4:30pm row wasn't visible, so it's left out.
+
+**Sun Nov 8, permit by permit** (the site shows permit numbers for that day):
+
+| Site | Permit | Feed | |
+|---|---|---|---|
+| 8–9am | #954701 Youth, Reato Soccer Academy | 8–9am | ✅ |
+| 10:30am–12pm | #938094 Adult, Manhattan international coed soccer | 1pm → 12pm | ❌ start |
+| 12–1pm | #934097 Adult, Fun Times Soccer NYC | 11am–1pm | ❌ start |
+| 1–3pm | #950003 Adult, NYC Women's Soccer | 1–3pm | ✅ |
+| 3pm–? (4:30 row not visible; user read 3–5) | #951733 Adult, NYC Soccer Collective | 3pm → 3pm | ❌ end |
+| 5–6pm | #935180 Adult, Pickup Soccer NYC | 5–6pm | ✅ |
+| 7–10pm | #943204 Adult, VOLO | 9–10pm | ❌ start |
+
+- **Every permit on the site is also in the feed, by ID.** 3 of the 7 have the right
+  times; 4 have a wrong start or end.
+- **5 feed permits aren't on the site:** #956849, #958761, #950459, #950658 and #952216.
+  They're probably cancelled or changed, but still in the feed.
+
+**Slot-by-slot, Nov 8–14** (27 half-hour slots, 8am–10pm, per day), using the current
+rule that only valid-time permits block:
+
+| Day | Agree | We say free, site booked | We say booked, site free |
+|---|---|---|---|
+| Sun 8 | 21 | 6 | 0 |
+| Mon 9 | 12 | **15** | 0 |
+| Tue 10 | 25 | 0 | 2 |
+| Wed 11 | 13 | 10 | 4 |
+| Thu 12 | 22 | 4 | 1 |
+| Fri 13 | 25 | 2 | 0 |
+| Sat 14 | 18 | 9 | 0 |
+| **Total** | **136 (72%)** | **46 (24%)** | **7 (4%)** |
+
+- **The feed agrees with the site in only 72% of slots.** Nearly all the errors are the
+  harmful kind: we'd tell people a field is open when it's booked.
+- **The feed is missing bookings, not only mis-timing them.** On Mon Nov 9 the feed has
+  3 permits (11am–1pm, 3:30–5pm, 9–10pm), but the site shows the field booked
+  9am–3pm, 3:30–5:30pm and 6–10pm.
+- **The extra blocks are pending permits.** The user checked Mon Nov 9: every
+  Unavailable block other than the feed's 3 permits says *"A permit pending final
+  approval makes this field at this time unavailable."* `tvpp-9vvx` lists **approved**
+  events only, so pending permits are invisible to us. On Monday, the feed's approved
+  permits were consistent with the map; all 15 mismatches were pending permits.
+- Whether the other days' "we say free, site booked" slots are also pending permits
+  hasn't been checked yet. If they are, most of the 28% disagreement is pending permits.
+
+**Next-day test (Mon Nov 2, evening rows; see
+[`validation/predictions_2026-11-02_chelsea.md`](../validation/predictions_2026-11-02_chelsea.md)):**
+the prediction was made before checking the map. The map shows #943204 (VOLO) at
+**6–10pm**; the feed says 9–10pm, and on Nov 8 the map said 7–10pm. So the start time
+is wrong by a varying amount, and one weekly league permit alone makes the feed call
+6–9pm "open" on most evenings. Evening slots across Nov 1–7 agree **56%** (35/63), and
+every miss says "free" when the field is booked. Being close to the date doesn't fix this.
+
+**Two separate problems:**
+1. **Pending permits are missing from the feed.** This is a gap in what the feed covers
+   (approved events only), not bad data. The app can't see them, so it must never say
+   "open" outright. It can say "no approved permits", while noting that pending
+   applications aren't public.
+2. **Approved permits sometimes have wrong times, or are no longer valid.** On Sun Nov 8,
+   4 of 7 site permits had wrong times in the feed, and 5 feed permits weren't on the site.
+   This is a real data-quality problem, measured on one day so far.
+
+**Verdict so far:** the feed can't support a confident "open" answer at Chelsea Park.
+It may support a hedged "no approved permits on record" answer, depending on how
+often pending permits and wrong times occur at other parks (§6).
+
+**Chelsea Nov 8 overall:** out of 12 feed permits, 5 were checked by number, and **all 5
+were wrong or missing** on the site. Taken at face value, our feed gave the right
+open/booked answer for roughly half the day's hours. That is a serious accuracy concern
+for building on `tvpp-9vvx` alone, and it needs more park-days before deciding (§6).
+
+## 5. What this changes in the plan
+
+> Items 4 and 5 below describe the earlier field-level design. They are superseded by
+> park-level answers (§4b and [PLAN.md](PLAN.md) §3). Field-level mapping is now a
+> "later" feature.
+
+1. **Primary permit source → `tvpp-9vvx`** via the Socrata API. There's no scraping, no
+   CORS problem (Socrata allows browser requests), and no undocumented endpoint.
+2. **"Who holds the permit" isn't available.** Answers become "Permitted (youth
+   soccer) 4–6 pm" without the organization's name.
+3. **Horizon is about 1 month ahead**, not the whole season. Further-out dates answer "Unknown".
+4. **Manual location map** (`location_map.csv` seeds it): 265 rows, 163 pre-filled, all
+   reviewed once. New labels appear rarely, so alert on unmapped labels during ingest.
+5. **Map:** the geometry is ready to use (WGS84 multipolygons), and it can also help
+   resolve ambiguous labels by eye.
+6. **Closures:** use `featurestatus` to show Inactive / Closed Temporarily fields as closed.
+
+## 6. Still open
+
+- **Pending permits:** do the other days' mismatches (Wed 11, Sat 14) also come from
+  pending permits? Is a pending permit a reason not to play? (Product decision.) Is there
+  any public source of pending applications?
+- **Is `tvpp-9vvx` accurate enough to build on?** At Chelsea on Nov 8, every permit
+  checked by number differed from the NYC Parks site. If more parks look like this, the
+  app should present feed data as "permits on record (may be out of date)" and lean on
+  the nycgovparks.org link, or the project should ask NYC Parks for a better feed.
+
+- Does `tvpp-9vvx` drop revoked permits promptly? Run it daily for a week and diff (step E, pointed at this source).
+- Are times local (America/New_York)? Very likely. Confirm with one known permit.
+- Are non-soccer permits on shared surfaces (football, lacrosse on the same turf) a
+  blocker for soccer? Assume yes, and include all sports when computing a field's bookings.
+- Ground truth (step D): compare one park's week with the Availability Map viewed in a browser.
+
+
+## 7. NYC Parks slots API — step H
+
+Found by the user: `$NYC_PARKS_SLOTS_API_URL?systemId=M011-SOCCER-1&startDate=2026-11-01`
+
+| Finding | Detail |
+|---|---|
+| Access | HTTP 200 JSON to an honestly identified client. Not blocked, unlike the HTML pages in step B. `robots.txt` doesn't disallow `/api/`. |
+| CORS | No `Access-Control-Allow-Origin` header, so browsers on our domain can't call it. A server-side job has to fetch it. |
+| Key | `systemId` = Athletic Facilities `system` (e.g. `M011-SOCCER-1`), so it maps **directly to fields**. No name matching needed. |
+| Window | 7 days from `startDate`, in 30-minute slots between opening and `close` (e.g. 10:00 PM). |
+| Shape | `availability`: Unix timestamp → `{in_season, permit_is_for_overlapping_field, num_pending_permits, permit_number, is_issued, permit_holder, permit_type}`. Slots that aren't listed are available. Also `fieldName` and per-day `close`. |
+| Slot kinds (Chelsea, 2 weeks) | 275 issued; 17 awaiting final approval (holder set, `is_issued: false`); 4 pending application only (no holder) |
+| Overlapping fields | 16 slots blocked by a permit on an overlapping field (Big Apple Recreational Sports). The API resolves shared surfaces itself. |
+| **Accuracy vs map** | **252 / 252 screenshot slots (100%)**, with the rule *unavailable ⇔ a permit holder is attached (issued or awaiting approval)*. Pending-only slots show as "\*Available" on the map. |
+
+**Caveats:**
+- It's undocumented, with no published terms or SLA. It could change or be blocked.
+- It's one request per field per week, roughly 370 active soccer fields × 2 weeks ≈ 740
+  requests per refresh. That needs a polite rate (one request every 1–2 seconds),
+  an honest User-Agent, and one or two refreshes a day.
+- Whether GitHub Actions IPs get the same 200 hasn't been tested yet.
+
+Reproduce: `python validation/step_h_slots_api.py` (two requests).

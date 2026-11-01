@@ -1,0 +1,653 @@
+{
+ "availability": {
+  "1793538000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 954701,
+   "is_issued": true,
+   "permit_holder": "Reato Soccer Academy LLC",
+   "permit_type": "Sport - Youth"
+  },
+  "1793539800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 954701,
+   "is_issued": true,
+   "permit_holder": "Reato Soccer Academy LLC",
+   "permit_type": "Sport - Youth"
+  },
+  "1793541600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 984080,
+   "is_issued": true,
+   "permit_holder": "Reato Soccer Academy LLC",
+   "permit_type": "Sport - Youth"
+  },
+  "1793543400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 984080,
+   "is_issued": true,
+   "permit_holder": "Reato Soccer Academy LLC",
+   "permit_type": "Sport - Youth"
+  },
+  "1793545200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 984080,
+   "is_issued": true,
+   "permit_holder": "Reato Soccer Academy LLC",
+   "permit_type": "Sport - Youth"
+  },
+  "1793547000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 984080,
+   "is_issued": true,
+   "permit_holder": "Reato Soccer Academy LLC",
+   "permit_type": "Sport - Youth"
+  },
+  "1793548800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 934097,
+   "is_issued": true,
+   "permit_holder": "Fun Times Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793550600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 934097,
+   "is_issued": true,
+   "permit_holder": "Fun Times Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793552400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 934097,
+   "is_issued": true,
+   "permit_holder": "Fun Times Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793554200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 934097,
+   "is_issued": true,
+   "permit_holder": "Fun Times Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793556000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 938094,
+   "is_issued": true,
+   "permit_holder": "Manhattan international coed soccer",
+   "permit_type": "Sport - Adult"
+  },
+  "1793557800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 938094,
+   "is_issued": true,
+   "permit_holder": "Manhattan international coed soccer",
+   "permit_type": "Sport - Adult"
+  },
+  "1793559600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 938094,
+   "is_issued": true,
+   "permit_holder": "Manhattan international coed soccer",
+   "permit_type": "Sport - Adult"
+  },
+  "1793561400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 938094,
+   "is_issued": true,
+   "permit_holder": "Manhattan international coed soccer",
+   "permit_type": "Sport - Adult"
+  },
+  "1793563200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 938094,
+   "is_issued": true,
+   "permit_holder": "Manhattan international coed soccer",
+   "permit_type": "Sport - Adult"
+  },
+  "1793565000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951733,
+   "is_issued": true,
+   "permit_holder": "NYC Soccer Collective",
+   "permit_type": "Sport - Adult"
+  },
+  "1793566800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951733,
+   "is_issued": true,
+   "permit_holder": "NYC Soccer Collective",
+   "permit_type": "Sport - Adult"
+  },
+  "1793568600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951733,
+   "is_issued": true,
+   "permit_holder": "NYC Soccer Collective",
+   "permit_type": "Sport - Adult"
+  },
+  "1793570400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 935180,
+   "is_issued": true,
+   "permit_holder": "Pickup Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793572200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 935180,
+   "is_issued": true,
+   "permit_holder": "Pickup Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793577600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 943204,
+   "is_issued": true,
+   "permit_holder": "VOLO",
+   "permit_type": "Sport - Adult"
+  },
+  "1793579400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 943204,
+   "is_issued": true,
+   "permit_holder": "VOLO",
+   "permit_type": "Sport - Adult"
+  },
+  "1793581200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 943204,
+   "is_issued": true,
+   "permit_holder": "VOLO",
+   "permit_type": "Sport - Adult"
+  },
+  "1793583000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 943204,
+   "is_issued": true,
+   "permit_holder": "VOLO",
+   "permit_type": "Sport - Adult"
+  },
+  "1793584800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 943204,
+   "is_issued": true,
+   "permit_holder": "VOLO",
+   "permit_type": "Sport - Adult"
+  },
+  "1793586600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 943204,
+   "is_issued": true,
+   "permit_holder": "VOLO",
+   "permit_type": "Sport - Adult"
+  },
+  "1793797200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 950251,
+   "is_issued": true,
+   "permit_holder": "SUNY Fashion Institute of Technology Athletics Dep",
+   "permit_type": "Sport - Adult"
+  },
+  "1793799000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 950251,
+   "is_issued": true,
+   "permit_holder": "SUNY Fashion Institute of Technology Athletics Dep",
+   "permit_type": "Sport - Adult"
+  },
+  "1793800800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 950251,
+   "is_issued": true,
+   "permit_holder": "SUNY Fashion Institute of Technology Athletics Dep",
+   "permit_type": "Sport - Adult"
+  },
+  "1793808000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951575,
+   "is_issued": true,
+   "permit_holder": "Avenues the World School",
+   "permit_type": "Sport - Youth"
+  },
+  "1793809800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951575,
+   "is_issued": true,
+   "permit_holder": "Avenues the World School",
+   "permit_type": "Sport - Youth"
+  },
+  "1793811600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951575,
+   "is_issued": true,
+   "permit_holder": "Avenues the World School",
+   "permit_type": "Sport - Youth"
+  },
+  "1793813400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951575,
+   "is_issued": true,
+   "permit_holder": "Avenues the World School",
+   "permit_type": "Sport - Youth"
+  },
+  "1793817000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949970,
+   "is_issued": true,
+   "permit_holder": "Bayard Rustin Educational Complex",
+   "permit_type": "Sport - Youth"
+  },
+  "1793818800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949970,
+   "is_issued": true,
+   "permit_holder": "Bayard Rustin Educational Complex",
+   "permit_type": "Sport - Youth"
+  },
+  "1793820600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949970,
+   "is_issued": true,
+   "permit_holder": "Bayard Rustin Educational Complex",
+   "permit_type": "Sport - Youth"
+  },
+  "1793822400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949970,
+   "is_issued": true,
+   "permit_holder": "Bayard Rustin Educational Complex",
+   "permit_type": "Sport - Youth"
+  },
+  "1793833200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 934098,
+   "is_issued": true,
+   "permit_holder": "Fun Times Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793835000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 934098,
+   "is_issued": true,
+   "permit_holder": "Fun Times Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793836800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951675,
+   "is_issued": false,
+   "permit_holder": "Pickup Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793838600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951675,
+   "is_issued": false,
+   "permit_holder": "Pickup Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793840400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951675,
+   "is_issued": false,
+   "permit_holder": "Pickup Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793842200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 951675,
+   "is_issued": false,
+   "permit_holder": "Pickup Soccer NYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1793844000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 943204,
+   "is_issued": true,
+   "permit_holder": "VOLO",
+   "permit_type": "Sport - Adult"
+  },
+  "1793845800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 943204,
+   "is_issued": true,
+   "permit_holder": "VOLO",
+   "permit_type": "Sport - Adult"
+  },
+  "1794056400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 1,
+   "permit_number": 987403,
+   "is_issued": false,
+   "permit_holder": null,
+   "permit_type": null
+  },
+  "1794060000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 940828,
+   "is_issued": true,
+   "permit_holder": "FootyNYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1794061800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 940828,
+   "is_issued": true,
+   "permit_holder": "FootyNYC",
+   "permit_type": "Sport - Adult"
+  },
+  "1794063600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 968632,
+   "is_issued": true,
+   "permit_holder": "Pawsome Squad Softball",
+   "permit_type": "Sport - Adult"
+  },
+  "1794065400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 968632,
+   "is_issued": true,
+   "permit_holder": "Pawsome Squad Softball",
+   "permit_type": "Sport - Adult"
+  },
+  "1794067200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 968632,
+   "is_issued": true,
+   "permit_holder": "Pawsome Squad Softball",
+   "permit_type": "Sport - Adult"
+  },
+  "1794069000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 968632,
+   "is_issued": true,
+   "permit_holder": "Pawsome Squad Softball",
+   "permit_type": "Sport - Adult"
+  },
+  "1794070800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 956849,
+   "is_issued": true,
+   "permit_holder": "Downtown United Soccer Club",
+   "permit_type": "Sport - Youth"
+  },
+  "1794072600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 956849,
+   "is_issued": true,
+   "permit_holder": "Downtown United Soccer Club",
+   "permit_type": "Sport - Youth"
+  },
+  "1794074400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 956849,
+   "is_issued": true,
+   "permit_holder": "Downtown United Soccer Club",
+   "permit_type": "Sport - Youth"
+  },
+  "1794078000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 934462,
+   "is_issued": true,
+   "permit_holder": "Bowery Premier Football Club",
+   "permit_type": "Sport - Adult"
+  },
+  "1794079800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 934462,
+   "is_issued": true,
+   "permit_holder": "Bowery Premier Football Club",
+   "permit_type": "Sport - Adult"
+  },
+  "1794081600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 950459,
+   "is_issued": true,
+   "permit_holder": "It's Called Football",
+   "permit_type": "Sport - Adult"
+  },
+  "1794083400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 950459,
+   "is_issued": true,
+   "permit_holder": "It's Called Football",
+   "permit_type": "Sport - Adult"
+  },
+  "1794085200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": true,
+   "num_pending_permits": 0,
+   "permit_number": 968891,
+   "is_issued": true,
+   "permit_holder": "Big Apple Recreational Sports",
+   "permit_type": "Sport - Adult"
+  },
+  "1794087000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": true,
+   "num_pending_permits": 0,
+   "permit_number": 968891,
+   "is_issued": true,
+   "permit_holder": "Big Apple Recreational Sports",
+   "permit_type": "Sport - Adult"
+  },
+  "1794088800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": true,
+   "num_pending_permits": 0,
+   "permit_number": 968891,
+   "is_issued": true,
+   "permit_holder": "Big Apple Recreational Sports",
+   "permit_type": "Sport - Adult"
+  },
+  "1794090600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": true,
+   "num_pending_permits": 0,
+   "permit_number": 968891,
+   "is_issued": true,
+   "permit_holder": "Big Apple Recreational Sports",
+   "permit_type": "Sport - Adult"
+  },
+  "1794092400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 983354,
+   "is_issued": true,
+   "permit_holder": "NYC Footy",
+   "permit_type": "Sport - Adult"
+  },
+  "1794094200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 983354,
+   "is_issued": true,
+   "permit_holder": "NYC Footy",
+   "permit_type": "Sport - Adult"
+  },
+  "1794096000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949436,
+   "is_issued": true,
+   "permit_holder": "NYC Footy",
+   "permit_type": "Sport - Adult"
+  },
+  "1794097800": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949436,
+   "is_issued": true,
+   "permit_holder": "NYC Footy",
+   "permit_type": "Sport - Adult"
+  },
+  "1794099600": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949436,
+   "is_issued": true,
+   "permit_holder": "NYC Footy",
+   "permit_type": "Sport - Adult"
+  },
+  "1794101400": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949436,
+   "is_issued": true,
+   "permit_holder": "NYC Footy",
+   "permit_type": "Sport - Adult"
+  },
+  "1794103200": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949436,
+   "is_issued": true,
+   "permit_holder": "NYC Footy",
+   "permit_type": "Sport - Adult"
+  },
+  "1794105000": {
+   "in_season": true,
+   "permit_is_for_overlapping_field": false,
+   "num_pending_permits": 0,
+   "permit_number": 949436,
+   "is_issued": true,
+   "permit_holder": "NYC Footy",
+   "permit_type": "Sport - Adult"
+  }
+ },
+ "fieldName": "Soccer-01",
+ "close": {
+  "2026-11-01": "10:00 PM",
+  "2026-11-02": "10:00 PM",
+  "2026-11-03": "10:00 PM",
+  "2026-11-04": "10:00 PM",
+  "2026-11-05": "10:00 PM",
+  "2026-11-06": "10:00 PM",
+  "2026-11-07": "10:00 PM"
+ }
+}
