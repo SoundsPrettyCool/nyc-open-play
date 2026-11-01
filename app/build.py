@@ -26,7 +26,7 @@ import json
 import os
 import sys
 import time
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -113,8 +113,20 @@ class SlotsClient:
                 time.sleep(self.delay * 2 ** (attempt + 1))
                 continue
             if not r.ok:
-                raise SlotsError(f"HTTP {r.status_code}")
-            data = r.json()
+                raise SlotsError(f"HTTP {r.status_code} ({r.headers.get('content-type', 'no content-type')})")
+            try:
+                data = r.json()
+            except ValueError:
+                # e.g. an HTML bot-check or error page served with a 2xx status
+                snippet = " ".join(r.text[:80].split())
+                raise SlotsError(f"HTTP {r.status_code} but not JSON "
+                                 f"({r.headers.get('content-type', 'no content-type')}): {snippet!r}") from None
+            # A field with no bookings comes back without "availability" (just fieldName/close);
+            # a wrong path comes back as {"error": ..., "message": ...} with HTTP 200.
+            if not isinstance(data, dict) or "error" in data or not ({"availability", "fieldName", "close"} & set(data)):
+                keys = sorted(data)[:5] if isinstance(data, dict) else type(data).__name__
+                msg = f": {str(data.get('message'))[:80]!r}" if isinstance(data, dict) and data.get("message") else ""
+                raise SlotsError(f"HTTP {r.status_code} unexpected JSON (keys: {keys}){msg}")
             if path:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(json.dumps(data))
@@ -199,7 +211,7 @@ def main():
             except SlotsError as e:
                 failures[sid] = str(e)
             except Exception as e:  # noqa: BLE001  (network errors etc.; never include the URL)
-                failures[sid] = type(e).__name__
+                failures[sid] = f"{type(e).__name__} (network error)"
             if n % 25 == 0 or n == len(active):
                 print(f"  slots: {n}/{len(active)} fields, {client.requests} requests, {len(failures)} failed", flush=True)
     except Refused as e:
@@ -276,6 +288,12 @@ def main():
     size = sum(f.stat().st_size for f in OUT.rglob("*.json"))
     print(f"parks: {len(index)}  fields checked: {len(active)}  failed: {len(failures)}  "
           f"requests: {client.requests}  data: {size / 1e6:.2f} MB  window: {window[0]}..{window[1]}")
+    if failures:
+        # Reasons only (never the URL), so CI logs show why fields failed.
+        print("failure reasons:")
+        for reason, n in Counter(failures.values()).most_common():
+            example = next(k for k, v in failures.items() if v == reason)
+            print(f"  {n} x {reason}   e.g. {example}")
     if active and len(failures) / len(active) > MAX_FAILURE_RATE:
         print(f"FAIL: {len(failures)}/{len(active)} fields failed (> {MAX_FAILURE_RATE:.0%}); not publishing.",
               file=sys.stderr)
