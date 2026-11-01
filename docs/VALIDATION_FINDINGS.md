@@ -144,6 +144,34 @@ of the time, because many parks have only 1–2 fields. That means the free-wind
 
 The step D checklist flags each such permit (⚠) so the map's real time can be recorded.
 
+## 4e. Ground truth — step D (in progress)
+
+Observations are logged in [`validation/ground_truth.csv`](../validation/ground_truth.csv).
+
+**Chelsea Park, Sun Nov 8** (map checked by the user on Nov 1):
+
+| Time | Map | Our data | Verdict |
+|---|---|---|---|
+| 9–10:30am | Available | Free 9–11am | ✅ mostly. 10:30–11 is booked on the map and missing from our feed. |
+| 4–5pm | Booked | Free | ❌ Caused by permit #951733 (below) |
+| 6–7pm | Available | Free | ✅ |
+| 7–9pm | Booked | Free | ❌ Probably ⚠ permit #952216 (feed: 6pm→5:30pm). Unconfirmed. |
+| All other hours | Booked | Booked | ✅ |
+
+- **Permit #951733 is confirmed on the map as 3–5pm**, Sport - Adult, issued to NYC Soccer
+  Collective. The feed has **3pm → 3pm**. So for this permit the **start is correct and
+  the end is wrong**, and the same wrong end appears on all four of its dates.
+- **The permits with valid times all agree with the map.** Every wrong answer that day
+  comes from ⚠ permits we ignored, or from a short booking missing from the feed. Together
+  they made us show about 3 hours as open that were actually booked.
+- **The map shows permittee names; the feed doesn't.**
+
+**Implication so far:** treat a ⚠ permit as *starting* at its feed start, with an
+unknown end. A slot at or after that start answers **"Unknown: permit time unclear"**
+until the next valid permit or the end of the day. A guessed fixed length would have
+blocked 6–7pm, which the map shows as open. This is based on one confirmed case, so
+more checks are needed.
+
 ## 5. What this changes in the plan
 
 > Items 4 and 5 below describe the earlier field-level design. They are superseded by
