@@ -155,7 +155,7 @@ Observations are logged in [`validation/ground_truth.csv`](../validation/ground_
 | 9–10:30am | Available | Free 9–11am | ✅ mostly. 10:30–11 is ⚠ permit #938094, whose real start is earlier than the feed says. |
 | 4–5pm | Booked | Free | ❌ Caused by permit #951733 (below) |
 | 6–7pm | Available | Free | ✅ |
-| 7–9pm | Booked | Free | ❌ Cause unknown. It isn't #952216, which isn't listed on the site at all. |
+| 7–9pm | Booked | Free | ❌ Permit #943204: the site says 7–9pm, but the feed has a normal-looking **9–10pm** |
 | All other hours | Booked | Booked | ✅ |
 
 **The four ⚠ permits that day, checked against the NYC Parks site:**
@@ -167,8 +167,10 @@ Observations are logged in [`validation/ground_truth.csv`](../validation/ground_
 | 950658 | 4pm → 11am | Not listed | Probably cancelled/changed, but still in the feed |
 | 952216 | 6pm → 5:30pm | Not listed | Probably cancelled/changed, but still in the feed |
 
-- **Permits with valid times agree with the site.** Every mismatch that day traces to a
-  ⚠ permit, except the unexplained 7–9pm block.
+- **Correction:** a permit with a normal-looking time can also be wrong. #943204 is
+  9–10pm on all 13 of its dates in the feed, but 7–9pm on the site. So the feed's times
+  are not reliable even when they look valid. How often that happens is unknown: 1 of
+  the 8 valid-time permits that day was checked by permit number.
 - For ⚠ permits, **neither time is reliable**, and **2 of 4 aren't real bookings at all.**
   Ignoring them, blocking from their start time, or guessing a length would each have
   given wrong answers.
@@ -178,6 +180,11 @@ Observations are logged in [`validation/ground_truth.csv`](../validation/ground_
 answer carries a warning ("N permits today have unclear times; confirm on NYC Parks")
 next to the link to the park's permit page. One park-day so far; more checks are needed
 to see whether the "2 of 4 not listed" ratio holds.
+
+**Chelsea Nov 8 overall:** out of 12 feed permits, 5 were checked by number, and **all 5
+were wrong or missing** on the site. Taken at face value, our feed gave the right
+open/booked answer for roughly half the day's hours. That is a serious accuracy concern
+for building on `tvpp-9vvx` alone, and it needs more park-days before deciding (§6).
 
 ## 5. What this changes in the plan
 
@@ -197,6 +204,11 @@ to see whether the "2 of 4 not listed" ratio holds.
 6. **Closures:** use `featurestatus` to show Inactive / Closed Temporarily fields as closed.
 
 ## 6. Still open
+
+- **Is `tvpp-9vvx` accurate enough to build on?** At Chelsea on Nov 8, every permit
+  checked by number differed from the NYC Parks site. If more parks look like this, the
+  app should present feed data as "permits on record (may be out of date)" and lean on
+  the nycgovparks.org link, or the project should ask NYC Parks for a better feed.
 
 - Does `tvpp-9vvx` drop revoked permits promptly? Run it daily for a week and diff (step E, pointed at this source).
 - Are times local (America/New_York)? Very likely. Confirm with one known permit.
