@@ -17,3 +17,4 @@ date,park,gispropnum,observation,permit_id,feed_start,feed_end,map_start,map_end
 2026-11-08,Chelsea Park,M011,permit_absent,958761,13:00,15:00,,,,"NYC Parks site screenshot (user, 2026-11-01)",in feed; not on site
 2026-11-08,Chelsea Park,M011,permit_absent,950459,15:00,16:00,,,,"NYC Parks site screenshot (user, 2026-11-01)",in feed; not on site
 2026-11-09,Chelsea Park,M011,pending_permits,,,,,,,"NYC Parks site (user, 2026-11-01)","all Unavailable blocks other than the 3 feed permits show 'A permit pending final approval makes this field at this time unavailable.' tvpp-9vvx lists approved events only"
+2026-11-02,Chelsea Park,M011,permit_time,943204,21:00,22:00,18:00,22:00,VOLO,"NYC Parks site screenshot (user, 2026-11-01)","start wrong again but by a different amount than Nov 8 (19:00); end correct both times"
