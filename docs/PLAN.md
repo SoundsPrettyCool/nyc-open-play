@@ -71,6 +71,7 @@ For park `P` and time window `T`:
 | `0 < B < N` | **"About `free` of N soccer fields have no permit"** |
 | `B ≥ N` | **"Likely fully booked"**. Never a negative number. Permit list shown. |
 | `N = 0` (all inactive/closed) | **"No active soccer fields listed"** |
+| Park has any permit with end ≤ start that day | Normal answer, plus **"⚠ N permits today have unclear times: confirm on NYC Parks"**. These permits never block time. |
 | Park unmapped, data stale, or `T` beyond the horizon | **"Unknown"**, with the reason |
 
 Below every answer:
@@ -166,7 +167,7 @@ Also answered by step G: counting is consistent in 94.1% of park-slots, the 21 p
 parks get an `n_override`, and half-field permits are negligible.
 
 1. **Real-world accuracy** (step D): does "about X free" match what's on the ground or on the Availability Map? The checklist is in [STEP_D_CHECKLIST.md](STEP_D_CHECKLIST.md).
-1a. **11% of permits have end ≤ start** (findings §4d). Assume a default length, block to end of day, or answer "Unknown"? Decide after step D shows what the map says for those permits.
+1a. **11% of permits have end ≤ start** (findings §4d–e). Decided from the Chelsea check: these permits don't block time, and the park-day answer carries a "permit times unclear, confirm on NYC Parks" warning. Re-check with more parks.
 2. Does `tvpp-9vvx` drop revoked permits promptly? (E)
 3. Are `tvpp-9vvx` times America/New_York local? (Almost certainly. Confirm once.)
 4. Should `n_override` be recomputed automatically on each ingest (any park where permits ever exceed `N`), or reviewed by hand?

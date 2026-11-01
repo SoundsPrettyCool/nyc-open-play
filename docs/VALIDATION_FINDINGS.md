@@ -152,25 +152,32 @@ Observations are logged in [`validation/ground_truth.csv`](../validation/ground_
 
 | Time | Map | Our data | Verdict |
 |---|---|---|---|
-| 9–10:30am | Available | Free 9–11am | ✅ mostly. 10:30–11 is booked on the map and missing from our feed. |
+| 9–10:30am | Available | Free 9–11am | ✅ mostly. 10:30–11 is ⚠ permit #938094, whose real start is earlier than the feed says. |
 | 4–5pm | Booked | Free | ❌ Caused by permit #951733 (below) |
 | 6–7pm | Available | Free | ✅ |
-| 7–9pm | Booked | Free | ❌ Probably ⚠ permit #952216 (feed: 6pm→5:30pm). Unconfirmed. |
+| 7–9pm | Booked | Free | ❌ Cause unknown. It isn't #952216, which isn't listed on the site at all. |
 | All other hours | Booked | Booked | ✅ |
 
-- **Permit #951733 is confirmed on the map as 3–5pm**, Sport - Adult, issued to NYC Soccer
-  Collective. The feed has **3pm → 3pm**. So for this permit the **start is correct and
-  the end is wrong**, and the same wrong end appears on all four of its dates.
-- **The permits with valid times all agree with the map.** Every wrong answer that day
-  comes from ⚠ permits we ignored, or from a short booking missing from the feed. Together
-  they made us show about 3 hours as open that were actually booked.
-- **The map shows permittee names; the feed doesn't.**
+**The four ⚠ permits that day, checked against the NYC Parks site:**
 
-**Implication so far:** treat a ⚠ permit as *starting* at its feed start, with an
-unknown end. A slot at or after that start answers **"Unknown: permit time unclear"**
-until the next valid permit or the end of the day. A guessed fixed length would have
-blocked 6–7pm, which the map shows as open. This is based on one confirmed case, so
-more checks are needed.
+| Permit | Feed | NYC Parks site | Problem |
+|---|---|---|---|
+| 951733 | 3pm → 3pm | 3–5pm (Sport - Adult, NYC Soccer Collective) | End wrong (same on all 4 of its dates) |
+| 938094 | 1pm → 12pm | 10:30am–12pm | **Start** wrong |
+| 950658 | 4pm → 11am | Not listed | Probably cancelled/changed, but still in the feed |
+| 952216 | 6pm → 5:30pm | Not listed | Probably cancelled/changed, but still in the feed |
+
+- **Permits with valid times agree with the site.** Every mismatch that day traces to a
+  ⚠ permit, except the unexplained 7–9pm block.
+- For ⚠ permits, **neither time is reliable**, and **2 of 4 aren't real bookings at all.**
+  Ignoring them, blocking from their start time, or guessing a length would each have
+  given wrong answers.
+- The site shows permittee names; the feed doesn't.
+
+**Rule adopted:** ⚠ permits don't block time. When a park has any ⚠ permit that day, the
+answer carries a warning ("N permits today have unclear times; confirm on NYC Parks")
+next to the link to the park's permit page. One park-day so far; more checks are needed
+to see whether the "2 of 4 not listed" ratio holds.
 
 ## 5. What this changes in the plan
 
