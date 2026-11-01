@@ -18,6 +18,9 @@ services:
         BASE_IMAGE: ${BASE_IMAGE:-python:3.12-slim}
     command: ["python", "app/build.py"]
     environment:
+      # Required for build-data (app/build.py stops if it's empty). Put it in a local
+      # .env file (gitignored) or export it; see README. Not needed for tests.
+      NYC_PARKS_SLOTS_API_URL: ${NYC_PARKS_SLOTS_API_URL:-}
       SOCRATA_APP_TOKEN: ${SOCRATA_APP_TOKEN:-}
     volumes:
       - ./app/site/data:/repo/app/site/data

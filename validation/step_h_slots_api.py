@@ -8,7 +8,7 @@ The NYC Parks Availability Map is backed by an undocumented JSON endpoint:
 One response covers 7 days from startDate. `availability` maps a Unix timestamp
 (30-minute slot start) to slot details. Slots that aren't listed are available.
 
-    python validation/step_h_slots_api.py                 # Chelsea, both screenshot weeks
+    NYC_PARKS_SLOTS_API_URL=... python validation/step_h_slots_api.py   # Chelsea, both weeks
     python validation/step_h_slots_api.py --offline       # reuse saved responses
 
 Be polite: honest User-Agent, a delay between requests, and only what's needed.
@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import time
 from collections import Counter
 from datetime import datetime
@@ -26,7 +27,7 @@ from zoneinfo import ZoneInfo
 
 from common import OUT, session, write_json
 
-API = "$NYC_PARKS_SLOTS_API_URL"
+API_ENV = "NYC_PARKS_SLOTS_API_URL"
 NY = ZoneInfo("America/New_York")
 GRIDS = ["ground_truth_chelsea_grid_2026-11-01_week.csv", "ground_truth_chelsea_grid.csv"]
 
@@ -38,7 +39,10 @@ def slot_unavailable(v: dict) -> bool:
 
 
 def fetch(s, system_id: str, start: str) -> dict:
-    r = s.get(API, params={"systemId": system_id, "startDate": start}, timeout=60)
+    url = os.environ.get(API_ENV, "").strip()
+    if not url:
+        raise SystemExit(f"Set {API_ENV} to the NYC Parks slots API URL (or use --offline).")
+    r = s.get(url, params={"systemId": system_id, "startDate": start}, timeout=60)
     r.raise_for_status()
     return r.json()
 

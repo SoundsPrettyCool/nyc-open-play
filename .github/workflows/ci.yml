@@ -30,6 +30,15 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
+      - name: Check required configuration
+        env:
+          NYC_PARKS_SLOTS_API_URL: ${{ vars.NYC_PARKS_SLOTS_API_URL }}
+        run: |
+          if [ -z "$NYC_PARKS_SLOTS_API_URL" ]; then
+            echo "::error::Repository variable NYC_PARKS_SLOTS_API_URL is not set. Add it under Settings -> Secrets and variables -> Actions -> Variables."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
 
       - name: Build image
@@ -37,10 +46,11 @@ jobs:
 
       - name: Build site data
         env:
+          NYC_PARKS_SLOTS_API_URL: ${{ vars.NYC_PARKS_SLOTS_API_URL }}
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
         run: |
           mkdir -p app/site/data && chmod 777 app/site/data
-          docker run --rm -e SOCRATA_APP_TOKEN \
+          docker run --rm -e NYC_PARKS_SLOTS_API_URL -e SOCRATA_APP_TOKEN \
             -v "$PWD/app/site/data:/repo/app/site/data" \
             soccer-open-play:ci python app/build.py --weeks 1 --limit 5
 

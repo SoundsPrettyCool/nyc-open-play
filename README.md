@@ -5,6 +5,18 @@ Find out whether an NYC park soccer field has a permit on it at a given date and
 - Plan: [docs/PLAN.md](docs/PLAN.md)
 - Data-source validation scripts: [validation/](validation/README.md)
 
+## Configuration
+
+The data build needs one required setting. **It isn't hard-coded in the repo.**
+
+| Name | Where | Required | What |
+|---|---|---|---|
+| `NYC_PARKS_SLOTS_API_URL` | GitHub **repository variable** (Settings → Secrets and variables → Actions → **Variables**) | **Yes** | Base URL of the NYC Parks athletic-field slots API, without a query string. See `docs/VALIDATION_FINDINGS.md` §7. |
+| `SOCRATA_APP_TOKEN` | GitHub **secret** | No | Raises NYC Open Data rate limits |
+
+Locally, copy `.env.example` to `.env` (gitignored) and fill it in; Docker Compose reads it.
+If the variable is missing, the build and the CI data jobs stop with an error that names it.
+
 ## Development & testing
 
 Everything runs in Docker, so local runs and CI use the same environment.
