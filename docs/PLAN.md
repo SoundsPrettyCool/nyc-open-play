@@ -1,7 +1,13 @@
 # Soccer Open Play — Plan
 
 Goal: tell a user whether an NYC park soccer field has **no permit on record** for a
-given date/time (i.e. likely open play), or who holds the permit and until when.
+given date/time (i.e. likely open play), or which kind of permit is on it and until when.
+
+> **Updated 2026-11-01 after validation:** see [VALIDATION_FINDINGS.md](VALIDATION_FINDINGS.md).
+> nycgovparks.org blocks automated clients (CloudFront 403). The primary permit source is
+> now the official NYC Open Data feed **NYC Permitted Event Information (`tvpp-9vvx`)**.
+> Its trade-offs: no permittee names, and a horizon of about 1 month. Sections below
+> are updated where that changes the design.
 
 Decisions so far:
 
@@ -13,8 +19,8 @@ Decisions so far:
 | Coverage | All of NYC |
 | Backend language | Python (tentative, confirm) |
 
-Core principle: **user requests never hit nycgovparks.org.** A background crawler
-ingests every park's permits into our DB; the web app reads only from the DB.
+Core principle: **user requests never hit upstream sources.** A background ingest job
+pulls permits from the Open Data API into our DB daily; the web app reads only from the DB.
 
 ---
 
@@ -22,10 +28,11 @@ ingests every park's permits into our DB; the web app reads only from the DB.
 
 | Source | What | Status |
 |---|---|---|
-| NYC Open Data "Athletic Facilities" (`qnem-b8re`) | Fields, sports, park IDs, geometry (NY State Plane LI, EPSG:2263) | Column names unconfirmed |
-| NYC Parks issued-permits spreadsheet per park (`nycgovparks.org/permits/field-and-court/issued/<park-id>/...`) | Current-season permits | Undocumented, may change |
-| NYC Parks Field & Court Permit Availability Map | Possible JSON backend | Not yet inspected |
-| NYC Open Data "Parks Properties" | Park boundaries for the map | Dataset ID to confirm |
+| NYC Open Data "Athletic Facilities" (`qnem-b8re`) | 410 soccer fields (`regulation_soccer` OR `nonregulation_soccer`), park ID `gispropnum`, field ID `system`, `featurestatus`, WGS84 multipolygons | **Confirmed** |
+| NYC Open Data "NYC Permitted Event Information" (`tvpp-9vvx`) | Approved Parks sports permits, ~1 month ahead, updated daily. No permittee names. | **Confirmed: primary permit source** |
+| NYC Open Data "Parks Properties" (`enfh-gkve`) | Park names (`signname`, `name311`) → `gispropnum`; park boundaries | **Confirmed** |
+| NYC Open Data "Parks Permit Areas" (`c5vm-g2dk`) | Extra park-name aliases | Confirmed (`cemsid` not useful for fields) |
+| NYC Parks issued-permits spreadsheets / Availability Map | Season-long data, permittee names | **Blocked (CloudFront 403)**. Not used. |
 
 ## 2. Validation (before any app code)
 
@@ -44,6 +51,11 @@ Scripts live in [`validation/`](../validation/README.md).
 - **E. Churn:** snapshot sheets twice daily for ~1 week, diff. Sets refresh cadence;
   shows whether revocations delete rows or change a status.
 
+**Status (2026-11-01):** A done. B blocked (CloudFront 403). C was replaced by
+**F** (`step_f_events.py`), which joins the official `tvpp-9vvx` feed: 64% of soccer
+permits auto-match, and 265 distinct locations go into a manual map. **Verdict: GO.**
+D and E are still to do. Details are in [VALIDATION_FINDINGS.md](VALIDATION_FINDINGS.md).
+
 Go / no-go:
 
 - ≥85–90% park IDs resolve and labels auto-map → **go**, manual override table for the rest.
@@ -53,39 +65,41 @@ Go / no-go:
 ## 3. Architecture
 
 ```
-[Crawler worker] --(rate-limited, conditional GET)--> nycgovparks.org
-      | raw files -> object storage (re-parseable)
+[Ingest job, daily] --(Socrata API)--> NYC Open Data (tvpp-9vvx, qnem-b8re, enfh-gkve)
+      | raw JSON snapshots -> object storage (re-parseable, diffable)
       v
 [Postgres + PostGIS + pg_trgm] <-- [FastAPI] <-- [Web UI + MapLibre] (CDN in front)
 ```
 
-- **Python**: openpyxl/pandas, rapidfuzz, pyproj. **FastAPI** for the API.
-- **Postgres**: PostGIS (`ST_Transform` 2263→4326 at ingest), `pg_trgm` for fuzzy park
-  search, `tstzrange` + GiST for overlap, `range_agg`/multiranges for free windows.
+- **Python**: requests, rapidfuzz. **FastAPI** for the API.
+- **Postgres**: PostGIS (geometry is already WGS84, so no reprojection), `pg_trgm` for
+  fuzzy park search, `tstzrange` + GiST for overlap, `range_agg`/multiranges for free windows.
 - No Redis initially; Postgres + CDN caching suffices.
 - Frontend: light React/Vite or server-rendered + htmx.
 - Hosting: one app container, one scheduled worker, managed Postgres.
 
-Crawler: staggered 3–4×/day, a few seconds between requests, ETag/Last-Modified,
-on-demand refresh of stale parks via a locked, rate-limited queue (never inline),
-keep last good snapshot on parse failure, alert on parse-failure spikes.
+Ingest: pull `tvpp-9vvx` (sports only) a few times a day, since it's cheap and official,
+using a Socrata app token. Keep each snapshot. Replace the permit window wholesale on
+each pull, so revoked permits disappear. Alert on new unmapped `event_location` labels,
+and on a sudden drop in row count.
 
 ### Data model
 
-- `park` (id, name, borough, aliases[], centroid, boundary MultiPolygon 4326)
-- `field` (id, park_id, open_data_id, name, sports[], surface, lit, geom 4326, status)
-- `field_label_map` (park_id, permit_label → field_id, method, confidence, verified)
-- `source_snapshot` (park_id, fetched_at, http_status, sha256, row_count, parse_ok, blob_key)
-- `permit` (park_id, field_id nullable, raw_label, permittee, during tstzrange, status, snapshot_id)
-- `closure` (field_id, during, reason, source)
+- `park` (gispropnum, name, borough, aliases[], centroid, boundary MultiPolygon 4326)
+- `field` (system, gispropnum, sports[], primary_sport, surface, lit, dimensions, geom 4326, featurestatus)
+- `location_map` (event_location → field system, method: tier1/tier2/tier3/manual, verified)
+- `source_snapshot` (dataset, fetched_at, row_count, sha256, blob_key)
+- `permit` (event_id, field_system nullable, event_location, sport, youth/adult, during tstzrange, snapshot_id)
+- `closure` (field_system, during, reason, source). Seeded from `featurestatus`.
 
-GiST indexes on geometries and `permit.during`.
+GiST indexes on geometries and `permit.during`. Permits for **all sports** on a field
+count as bookings, because the surface is shared.
 
 ### Answers are three-state
 
 1. **No permit on record** (never "available")
-2. **Permitted**: permittee + until when
-3. **Unknown**: stale data, unmapped field, or outside current season
+2. **Permitted**: sport + youth/adult + until when (the permittee's name isn't published)
+3. **Unknown**: stale data, unmapped field, field closed/inactive, or beyond the ~1-month horizon
 
 Always show data freshness.
 
@@ -106,7 +120,7 @@ Purpose: let users **verify the place** is the one they mean.
 ## 5. MVP vs. later
 
 **MVP**
-- All-NYC soccer fields, scheduled crawler.
+- All-NYC soccer fields, scheduled Open Data ingest, reviewed location map (265 rows).
 - Fuzzy park search with mini-map per result for disambiguation.
 - Park page: per-field day timeline, slot check, map.
 - Three-state answers, freshness stamps, "unofficial; fields may be closed" disclaimer.
@@ -121,19 +135,19 @@ Purpose: let users **verify the place** is the one they mean.
 
 ## 6. Open questions
 
-1. Real column names, how soccer is marked, park ID format? (A)
-2. Does the permit URL park ID equal the Open Data park ID? (B)
-3. Permit sheet format: recurring permits expanded? cancelled rows included? local times?
-4. Does the Availability Map have a JSON backend?
-5. Partial-field (half-field) or multi-field permits?
-6. Does a permit for another sport on the same surface block soccer? (Assume yes.)
-7. Will NYC Parks provide an official feed? Does ToS forbid scraping? (Email / FOIL.)
-8. What to show between seasons?
-9. Field geometry: polygons or points?
-10. Are field names/numbers visible on the ground?
-11. Satellite view in MVP? (Depends on imagery terms.)
-12. Does the park-boundary dataset share the Athletic Facilities park ID?
-13. Python confirmed, or TypeScript end to end?
+Answered by validation: column names / soccer marker / park ID (A); geometry is WGS84
+multipolygons; Parks Properties shares `gispropnum`; the scraping question is moot
+because we now use the official feed.
+
+1. Does `tvpp-9vvx` drop revoked permits promptly? (E: run daily for a week, diff.)
+2. Are `tvpp-9vvx` times America/New_York local? (Almost certainly. Confirm once.)
+3. Partial-field (half-field) or multi-field permits? Some labels hint at this, e.g. `Soccer-01 E`, `Soccer Full Field`.
+4. Does a permit for another sport on the same surface block soccer? (Assume yes.)
+5. Is the ~1-month horizon acceptable? Season-long data would need NYC Parks to cooperate (email / FOIL).
+6. What to show between seasons?
+7. Are field names/numbers visible on the ground?
+8. Satellite view in MVP? (Depends on imagery terms.)
+9. Python confirmed, or TypeScript end to end?
 
 ## 7. Effort estimate (if validation is clean)
 
