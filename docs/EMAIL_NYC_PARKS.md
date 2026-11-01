@@ -21,7 +21,7 @@ so they can play pickup without walking into a permitted game. Players can check
 Field & Court Permit Availability Map today, but they can't easily search across parks.
 
 To do this, the site reads the same data the map uses, from
-[paste the slots API URL here — the value of the NYC_PARKS_SLOTS_API_URL repo variable], for active soccer fields only (field
+[paste the slots API URL here — the value of the NYC_PARKS_SLOTS_API_URL repository secret], for active soccer fields only (field
 IDs from the Athletic Facilities dataset on NYC Open Data). We're careful with it:
 
 - About 740 requests twice a day (one per field per week, two weeks ahead), one request every

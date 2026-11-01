@@ -12,7 +12,7 @@ Sources:
     enfh-gkve (Open Data)  Parks Properties: park names + boundaries
     NYC Parks slots API  per-field availability (undocumented; see docs/VALIDATION_FINDINGS.md §7).
         Its URL is NOT hard-coded: set the NYC_PARKS_SLOTS_API_URL environment variable
-        (a GitHub repository variable in CI). One request per field per week, sent politely:
+        (a GitHub repository secret in CI). One request per field per week, sent politely:
         honest User-Agent, a fixed delay, retries only on 429/5xx, and a hard stop on 403.
 
 Exit status is non-zero if the slots API refuses us or too many fields fail, so CI
@@ -81,7 +81,7 @@ def slots_api_url() -> str:
     url = os.environ.get(SLOTS_API_ENV, "").strip()
     if not url:
         print(f"ERROR: set {SLOTS_API_ENV} to the NYC Parks slots API URL "
-              "(on GitHub: Settings -> Secrets and variables -> Actions -> Variables).", file=sys.stderr)
+              "(on GitHub: Settings -> Secrets and variables -> Actions -> Secrets).", file=sys.stderr)
         sys.exit(3)
     if not url.startswith("https://"):
         print(f"ERROR: {SLOTS_API_ENV} must be an https:// URL.", file=sys.stderr)

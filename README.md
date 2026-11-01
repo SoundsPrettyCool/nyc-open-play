@@ -11,11 +11,12 @@ The data build needs one required setting. **It isn't hard-coded in the repo.**
 
 | Name | Where | Required | What |
 |---|---|---|---|
-| `NYC_PARKS_SLOTS_API_URL` | GitHub **repository variable** (Settings → Secrets and variables → Actions → **Variables**) | **Yes** | Base URL of the NYC Parks athletic-field slots API, without a query string. See `docs/VALIDATION_FINDINGS.md` §7. |
+| `NYC_PARKS_SLOTS_API_URL` | GitHub **repository secret** (Settings → Secrets and variables → Actions → **Secrets**) | **Yes** | Base URL of the NYC Parks athletic-field slots API, without a query string. See `docs/VALIDATION_FINDINGS.md` §7. |
 | `SOCRATA_APP_TOKEN` | GitHub **secret** | No | Raises NYC Open Data rate limits |
 
 Locally, copy `.env.example` to `.env` (gitignored) and fill it in; Docker Compose reads it.
-If the variable is missing, the build and the CI data jobs stop with an error that names it.
+If it's missing, the build and the CI data jobs stop with an error that names it. It's a secret, not a variable,
+so GitHub masks it as `***` in workflow logs and doesn't pass it to pull requests from forks.
 
 ## Development & testing
 

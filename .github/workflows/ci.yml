@@ -32,10 +32,10 @@ jobs:
     steps:
       - name: Check required configuration
         env:
-          NYC_PARKS_SLOTS_API_URL: ${{ vars.NYC_PARKS_SLOTS_API_URL }}
+          NYC_PARKS_SLOTS_API_URL: ${{ secrets.NYC_PARKS_SLOTS_API_URL }}
         run: |
           if [ -z "$NYC_PARKS_SLOTS_API_URL" ]; then
-            echo "::error::Repository variable NYC_PARKS_SLOTS_API_URL is not set. Add it under Settings -> Secrets and variables -> Actions -> Variables."
+            echo "::error::Repository secret NYC_PARKS_SLOTS_API_URL is not set. Add it under Settings -> Secrets and variables -> Actions -> Secrets."
             exit 1
           fi
 
@@ -46,7 +46,7 @@ jobs:
 
       - name: Build site data
         env:
-          NYC_PARKS_SLOTS_API_URL: ${{ vars.NYC_PARKS_SLOTS_API_URL }}
+          NYC_PARKS_SLOTS_API_URL: ${{ secrets.NYC_PARKS_SLOTS_API_URL }}
           SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
         run: |
           mkdir -p app/site/data && chmod 777 app/site/data
